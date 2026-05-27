@@ -248,7 +248,7 @@ oninput="searchParts()"
 
 <input
 id="newDrawer"
-placeholder="Drawer e.g. Left Drawer 3 OR Right Drawer 5"
+placeholder="Drawer EXACTLY like: Left Drawer 3 OR Right Drawer 5"
 >
 
 <input id="newQuantity" placeholder="Quantity">
@@ -534,6 +534,12 @@ showPage("mapPage");
 
 clearHighlights();
 
+alert(
+"Rack: " + rack +
+"\nShelf: " + shelf +
+"\nDrawer: " + drawer
+);
+
 const rackNum =
 extractNumber(rack);
 
@@ -575,54 +581,30 @@ if(shelfEl){
 shelfEl.classList.add("highlight");
 }
 
-if(drawerNum){
-
 if(drawerText.includes("left")){
 
 document.getElementById("left-drawer-main")
 .classList.add("highlight");
 
-const row =
+const leftRow =
 document.getElementById("left-drawer-" + drawerNum);
 
-if(row){
-row.classList.add("highlight");
+if(leftRow){
+leftRow.classList.add("highlight");
 }
 
 }
 
-else if(drawerText.includes("right")){
+if(drawerText.includes("right")){
 
 document.getElementById("right-drawer-main")
 .classList.add("highlight");
 
-const row =
+const rightRow =
 document.getElementById("right-drawer-" + drawerNum);
 
-if(row){
-row.classList.add("highlight");
-}
-
-}
-
-else{
-
-document.getElementById("selectedInfo").innerHTML +=
-
-`<div class="card">
-
-Drawer side not specified.<br><br>
-
-Use:
-<br>
-Left Drawer ${drawerNum}
-<br>
-OR
-<br>
-Right Drawer ${drawerNum}
-
-</div>`;
-
+if(rightRow){
+rightRow.classList.add("highlight");
 }
 
 }
