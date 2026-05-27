@@ -1,288 +1,318 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>STT Parts Inventory</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Workshop Inventory</title>
 
 <style>
+
 body{
-margin:0;
-font-family:Arial;
-background:#0b0b0b;
-color:white;
+    margin:0;
+    font-family:Arial;
+    background:#0a0a0a;
+    color:white;
 }
 
-.topbar{
-background:#111;
-padding:18px;
-border-bottom:5px solid #c1121f;
+header{
+    background:#111;
+    padding:20px;
+    border-bottom:3px solid #cc0000;
 }
 
-button{
-background:#c1121f;
-color:white;
-border:none;
-padding:12px;
-border-radius:8px;
-font-weight:bold;
-margin:5px;
-cursor:pointer;
+h1{
+    margin:0;
+    color:#ff2b2b;
 }
 
-button:hover{
-background:#8f0d17;
+nav{
+    margin-top:15px;
+}
+
+nav button{
+    background:#cc0000;
+    border:none;
+    color:white;
+    padding:12px 20px;
+    margin-right:10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+nav button:hover{
+    background:#ff2b2b;
 }
 
 .page{
-display:none;
-padding:20px;
+    display:none;
+    padding:20px;
 }
 
 .active{
-display:block;
+    display:block;
 }
 
-input,textarea{
-width:100%;
-padding:14px;
-margin:8px 0;
-border-radius:8px;
-border:none;
-font-size:16px;
-box-sizing:border-box;
+input{
+    width:100%;
+    padding:18px;
+    font-size:22px;
+    border:none;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-sizing:border-box;
 }
 
 .card{
-background:#181818;
-border-left:5px solid #c1121f;
-padding:15px;
-margin:12px 0;
-border-radius:10px;
+    background:#161616;
+    border-left:6px solid #cc0000;
+    padding:20px;
+    margin-bottom:15px;
+    border-radius:12px;
 }
 
-.title{
-font-size:24px;
-color:#ff4d4d;
-font-weight:bold;
+.card h2{
+    margin-top:0;
+    color:#ff4d4d;
 }
 
 .location{
-color:#ffb3b3;
-font-weight:bold;
-margin-top:10px;
+    color:#00ff88;
+    font-weight:bold;
 }
 
-.map-area{
-display:grid;
-grid-template-columns:1.3fr 1fr;
-gap:20px;
-margin-top:20px;
+.map-container{
+    display:flex;
+    gap:30px;
+    flex-wrap:wrap;
 }
 
-.room,.storage-panel{
-background:#f2f2f2;
-color:black;
-padding:15px;
-border-radius:8px;
+.workshop{
+    width:900px;
+    height:700px;
+    background:#efefef;
+    position:relative;
+    border:4px solid black;
 }
 
-.rack-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:3px;
-margin-bottom:25px;
-}
-
-.rack,.shelf,.drawer,.cupboard,.bench{
-background:#dbe5f1;
-border:2px solid #111;
-padding:14px;
-text-align:center;
-border-radius:4px;
-}
-
-.bench{
-background:#e9e6d8;
-margin:40px auto;
-width:50%;
-}
-
-.wall-items{
-display:grid;
-grid-template-columns:1fr 1fr 1fr;
-gap:20px;
-margin-top:50px;
-}
-
-.panel-title{
-background:#4f86c6;
-color:black;
-padding:8px;
-text-align:center;
-font-weight:bold;
-border:2px solid #111;
-}
-
-.shelf,.drawer{
-padding:8px;
+.box{
+    position:absolute;
+    border:2px solid black;
+    background:#dce6f2;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    font-weight:bold;
+    color:black;
 }
 
 .highlight{
-background:#00b050!important;
-color:black!important;
-font-weight:bold;
+    background:#00ff66 !important;
+    animation:flash 1s infinite;
 }
 
-.highlight-red{
-background:#c1121f!important;
-color:white!important;
-font-weight:bold;
+@keyframes flash{
+    0%{opacity:1;}
+    50%{opacity:0.5;}
+    100%{opacity:1;}
 }
 
-.error{
-color:#ff7b7b;
-font-weight:bold;
-font-size:18px;
+.side-panel{
+    display:flex;
+    flex-direction:column;
+    gap:30px;
 }
 
-.success{
-color:#7cff9b;
-font-weight:bold;
+.shelf-box{
+    width:260px;
+    border:2px solid black;
+    background:#dce6f2;
+    color:black;
 }
 
-@media(max-width:800px){
-.map-area{
-grid-template-columns:1fr;
+.shelf-title{
+    background:#2d65b3;
+    color:white;
+    text-align:center;
+    padding:10px;
+    font-weight:bold;
 }
 
-.wall-items{
-grid-template-columns:1fr;
+.shelf{
+    border-top:1px solid black;
+    padding:8px;
+    text-align:center;
 }
+
+.add-form{
+    max-width:700px;
 }
+
+.add-form input{
+    font-size:18px;
+}
+
+.add-form button{
+    background:#cc0000;
+    color:white;
+    border:none;
+    padding:15px;
+    width:100%;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.add-form button:hover{
+    background:#ff2b2b;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-<h1>STT Parts Inventory</h1>
+<header>
+<h1>Workshop Inventory</h1>
 
-<button onclick="showPage('searchPage')">Search Parts</button>
-<button onclick="showPage('addPage')">Add New Part</button>
-<button onclick="showPage('mapPage')">Shelf Map</button>
-</div>
+<nav>
+<button onclick="showPage('searchPage')">Search</button>
+<button onclick="showPage('addPage')">Add Part</button>
+<button onclick="showPage('mapPage')">Map View</button>
+</nav>
+</header>
+
+<!-- SEARCH PAGE -->
 
 <div id="searchPage" class="page active">
 
-<h2>Search Parts</h2>
+<input
+id="search"
+placeholder="Search parts..."
+oninput="searchParts()"
+/>
 
-<input id="search" placeholder="Search by part name, supplier, MPN, type, rack, shelf...">
-
-<div id="results">Loading parts...</div>
+<div id="results"></div>
 
 </div>
+
+<!-- ADD PAGE -->
 
 <div id="addPage" class="page">
 
 <h2>Add New Part</h2>
 
-<input id="add_part_name" placeholder="Part Name">
-<input id="add_supplier_name" placeholder="Supplier Name">
-<input id="add_mpn" placeholder="Manufacturer Part Number">
-<input id="add_type" placeholder="Part Type">
-<textarea id="add_description" placeholder="Description"></textarea>
+<div class="add-form">
 
-<input id="add_rack" placeholder="Rack">
-<input id="add_shelf" placeholder="Shelf">
-<input id="add_drawer" placeholder="Drawer">
-<input id="add_area" placeholder="Area">
+<input id="newPartName" placeholder="Part Name">
+<input id="newSupplier" placeholder="Supplier">
+<input id="newMPN" placeholder="Manufacturer Part Number">
+<input id="newType" placeholder="Part Type">
+<input id="newRack" placeholder="Rack">
+<input id="newShelf" placeholder="Shelf">
+<input id="newQuantity" placeholder="Quantity">
 
-<textarea id="add_notes" placeholder="Notes"></textarea>
-
-<button onclick="addPart()">Save Part</button>
-
-<div id="saveMessage"></div>
+<button onclick="addPart()">Add Part</button>
 
 </div>
+
+</div>
+
+<!-- MAP PAGE -->
 
 <div id="mapPage" class="page">
 
-<h2>Interactive Shelf Map</h2>
+<h2>Workshop Map</h2>
 
-<div id="selectedInfo">
-Select a part from the search page to highlight its location.
+<div class="map-container">
+
+<div class="workshop">
+
+<!-- TOP RACKS -->
+
+<div class="box rack" id="Rack 13"
+style="top:40px;left:40px;width:260px;height:70px;">
+Rack 13
 </div>
 
-<div class="map-area">
-
-<div class="room">
-
-<h3>Workshop Area</h3>
-
-<div class="rack-grid">
-<div class="rack" data-rack="13">Rack 13</div>
-<div class="rack" data-rack="14">Rack 14</div>
-<div class="rack" data-rack="15">Rack 15</div>
-<div class="rack" data-rack="16">Rack 16</div>
-<div class="rack" data-rack="17">Rack 17</div>
-<div class="rack" data-rack="18">Rack 18</div>
+<div class="box rack" id="Rack 14"
+style="top:40px;left:300px;width:260px;height:70px;">
+Rack 14
 </div>
 
-<div class="bench">Bench</div>
+<div class="box rack" id="Rack 15"
+style="top:40px;left:560px;width:260px;height:70px;">
+Rack 15
+</div>
 
-<div class="wall-items">
-<div class="drawer" data-drawer="left drawer">Left Drawer</div>
-<div class="cupboard" data-area="cupboard 1">Cupboard 1</div>
-<div class="rack" data-rack="19">Rack 19</div>
-<div class="drawer" data-drawer="right drawer">Right Drawer</div>
+<div class="box rack" id="Rack 16"
+style="top:110px;left:40px;width:260px;height:70px;">
+Rack 16
+</div>
+
+<div class="box rack" id="Rack 17"
+style="top:110px;left:300px;width:260px;height:70px;">
+Rack 17
+</div>
+
+<div class="box rack" id="Rack 18"
+style="top:110px;left:560px;width:260px;height:70px;">
+Rack 18
+</div>
+
+<!-- DRAWERS -->
+
+<div class="box"
+style="top:240px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
+Right Drawer
+</div>
+
+<div class="box"
+style="top:430px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
+Left Drawer
+</div>
+
+<!-- CUPBOARD -->
+
+<div class="box rack" id="Cupboard 1"
+style="bottom:60px;left:40px;width:280px;height:60px;">
+Cupboard 1
+</div>
+
+<!-- BENCH -->
+
+<div class="box"
+style="top:400px;left:180px;width:350px;height:130px;background:#ddd9cf;">
+Bench
+</div>
+
+<div class="box"
+style="top:530px;left:390px;width:140px;height:160px;background:#ddd9cf;">
+</div>
+
+<!-- RACK 19 -->
+
+<div class="box rack" id="Rack 19"
+style="bottom:60px;right:60px;width:280px;height:60px;">
+Rack 19
 </div>
 
 </div>
 
-<div>
+<!-- RIGHT PANELS -->
 
-<div class="storage-panel">
+<div class="side-panel">
 
-<div class="panel-title">Left Drawer</div>
+<div class="shelf-box">
 
-<div class="drawer" data-drawer="left drawer" data-shelf="1">Drawer 1</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="2">Drawer 2</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="3">Drawer 3</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="4">Drawer 4</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="5">Drawer 5</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="6">Drawer 6</div>
-<div class="drawer" data-drawer="left drawer" data-shelf="7">Drawer 7</div>
+<div class="shelf-title">Rack Shelves</div>
 
-</div>
-
-<br>
-
-<div class="storage-panel">
-
-<div class="panel-title">Right Drawer</div>
-
-<div class="drawer" data-drawer="right drawer" data-shelf="1">Drawer 1</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="2">Drawer 2</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="3">Drawer 3</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="4">Drawer 4</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="5">Drawer 5</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="6">Drawer 6</div>
-<div class="drawer" data-drawer="right drawer" data-shelf="7">Drawer 7</div>
-
-</div>
-
-<br>
-
-<div class="storage-panel">
-
-<div class="panel-title">Rack Shelves</div>
-
-<div class="shelf" data-shelf="1">Shelf 1</div>
-<div class="shelf" data-shelf="2">Shelf 2</div>
-<div class="shelf" data-shelf="3">Shelf 3</div>
-<div class="shelf" data-shelf="4">Shelf 4</div>
-<div class="shelf" data-shelf="5">Shelf 5</div>
-<div class="shelf" data-shelf="6">Shelf 6</div>
+<div class="shelf" id="Shelf 1">Shelf 1</div>
+<div class="shelf" id="Shelf 2">Shelf 2</div>
+<div class="shelf" id="Shelf 3">Shelf 3</div>
+<div class="shelf" id="Shelf 4">Shelf 4</div>
+<div class="shelf" id="Shelf 5">Shelf 5</div>
+<div class="shelf" id="Shelf 6">Shelf 6</div>
 
 </div>
 
@@ -294,219 +324,203 @@ Select a part from the search page to highlight its location.
 
 <script>
 
-const SUPABASE_URL = "https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/";
-const SUPABASE_KEY = "sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
+const API =
+"https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/parts_public"
 
-let allParts = [];
-let displayedParts = [];
+const API_KEY =
+"sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt"
 
-function safe(v){
-return v === null || v === undefined || v === "" ? "" : v;
-}
+let allParts = []
 
-function showPage(id){
-document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-document.getElementById(id).classList.add("active");
+function showPage(page){
+
+document.querySelectorAll(".page")
+.forEach(p=>p.classList.remove("active"))
+
+document.getElementById(page)
+.classList.add("active")
+
 }
 
 async function loadParts(){
 
-const response = await fetch(SUPABASE_URL + "parts_public",{
+const response = await fetch(API,{
 headers:{
-apikey:SUPABASE_KEY,
-Authorization:"Bearer " + SUPABASE_KEY
+apikey:API_KEY,
+Authorization:"Bearer " + API_KEY
 }
-});
+})
 
-const data = await response.json();
+const data = await response.json()
 
-if(data.code || data.message){
+allParts = data
 
-document.getElementById("results").innerHTML =
-`<div class="error">ERROR: ${JSON.stringify(data)}</div>`;
+showParts(allParts)
 
-return;
 }
 
-allParts = data || [];
-displayedParts = allParts;
+function searchParts(){
 
-showParts(displayedParts);
+const search =
+document.getElementById("search")
+.value
+.toLowerCase()
+
+const filtered = allParts.filter(part =>
+
+(part.part_name || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+(part.manufacturer_part_number || "")
+.toLowerCase()
+.includes(search)
+
+||
+
+(part.supplier_name || "")
+.toLowerCase()
+.includes(search)
+
+)
+
+showParts(filtered)
+
 }
 
 function showParts(parts){
 
-displayedParts = parts;
-
-if(parts.length === 0){
-
 document.getElementById("results").innerHTML =
-`<div class="error">No parts found.</div>`;
 
-return;
-}
+parts
+.filter(part =>
 
-document.getElementById("results").innerHTML = parts.map((p,i)=>`
+part.rack !== "Unknown" &&
+part.shelf !== "Unknown"
+
+)
+
+.map(part => `
 
 <div class="card">
 
-<div class="title">${safe(p.part_name)}</div>
+<h2>${part.part_name || ""}</h2>
 
-<div><b>Supplier:</b> ${safe(p.supplier_name)}</div>
+<p><b>Supplier:</b> ${part.supplier_name || ""}</p>
 
-<div><b>Manufacturer Part Number:</b> ${safe(p.manufacturer_part_number)}</div>
+<p><b>MPN:</b> ${part.manufacturer_part_number || ""}</p>
 
-<div><b>Part Type:</b> ${safe(p.part_type)}</div>
+<p><b>Type:</b> ${part.part_type || ""}</p>
 
-${safe(p.description) ? `<div><b>Description:</b> ${safe(p.description)}</div>` : ""}
+<p><b>Quantity:</b> ${part.quantity || ""}</p>
 
-<div class="location">
+<p class="location">
+${part.rack || ""}
+-
+${part.shelf || ""}
+</p>
 
-${safe(p.rack) ? `Rack: ${safe(p.rack)} ` : ""}
-
-${safe(p.shelf) ? `| Shelf: ${safe(p.shelf)} ` : ""}
-
-${safe(p.drawer) ? `| Drawer: ${safe(p.drawer)} ` : ""}
-
-${safe(p.area) ? `| Area: ${safe(p.area)} ` : ""}
-
-</div>
-
-${safe(p.notes) ? `<div><b>Notes:</b> ${safe(p.notes)}</div>` : ""}
-
-<button onclick="showLocation(${i})">
+<button onclick="
+showMap(
+'${part.rack}',
+'${part.shelf}'
+)
+">
 View Location on Map
 </button>
 
 </div>
 
-`).join("");
+`).join("")
+
 }
 
-document.getElementById("search").addEventListener("input",function(){
+function clearHighlights(){
 
-let v=this.value.toLowerCase();
+document
+.querySelectorAll(".highlight")
+.forEach(el=>el.classList.remove("highlight"))
 
-let filtered=allParts.filter(p=>
-JSON.stringify(p).toLowerCase().includes(v)
-);
+}
 
-showParts(filtered);
+function showMap(rack,shelf){
 
-});
+showPage("mapPage")
 
-function showLocation(index){
+clearHighlights()
 
-let p = displayedParts[index];
+const rackElement =
+document.getElementById(rack)
 
-showPage("mapPage");
+const shelfElement =
+document.getElementById(shelf)
 
-document.querySelectorAll(".highlight,.highlight-red").forEach(e=>{
-e.classList.remove("highlight");
-e.classList.remove("highlight-red");
-});
+if(rackElement){
 
-let rack=safe(p.rack).toLowerCase().replace("rack","").trim();
-let shelf=safe(p.shelf).toLowerCase().replace("shelf","").trim();
-let drawer=safe(p.drawer).toLowerCase().trim();
-let area=safe(p.area).toLowerCase().trim();
+rackElement.classList.add("highlight")
 
-document.getElementById("selectedInfo").innerHTML =
+}
 
-`<div class="card">
+if(shelfElement){
 
-<div class="title">${safe(p.part_name)}</div>
+shelfElement.classList.add("highlight")
 
-${rack ? "Rack: " + safe(p.rack) + "<br>" : ""}
+}
 
-${shelf ? "Shelf: " + safe(p.shelf) + "<br>" : ""}
-
-${drawer ? "Drawer: " + safe(p.drawer) + "<br>" : ""}
-
-${area ? "Area: " + safe(p.area) : ""}
-
-</div>`;
-
-document.querySelectorAll("[data-rack]").forEach(el=>{
-if(el.dataset.rack.toLowerCase()===rack)
-el.classList.add("highlight-red");
-});
-
-document.querySelectorAll("[data-shelf]").forEach(el=>{
-if(el.dataset.shelf.toLowerCase()===shelf)
-el.classList.add("highlight");
-});
-
-document.querySelectorAll("[data-drawer]").forEach(el=>{
-if(drawer && el.dataset.drawer.toLowerCase().includes(drawer))
-el.classList.add("highlight-red");
-});
-
-document.querySelectorAll("[data-area]").forEach(el=>{
-if(area && el.dataset.area.toLowerCase().includes(area))
-el.classList.add("highlight-red");
-});
 }
 
 async function addPart(){
 
 const newPart = {
 
-"Part Name":document.getElementById("add_part_name").value,
+part_name:
+document.getElementById("newPartName").value,
 
-"Supplier Name":document.getElementById("add_supplier_name").value,
+supplier_name:
+document.getElementById("newSupplier").value,
 
-"Manufacturer Part Number":document.getElementById("add_mpn").value,
+manufacturer_part_number:
+document.getElementById("newMPN").value,
 
-"Part Type":document.getElementById("add_type").value,
+part_type:
+document.getElementById("newType").value,
 
-"Description":document.getElementById("add_description").value,
+rack:
+document.getElementById("newRack").value,
 
-"Rack":document.getElementById("add_rack").value,
+shelf:
+document.getElementById("newShelf").value,
 
-"Shelf":document.getElementById("add_shelf").value,
+quantity:
+document.getElementById("newQuantity").value
 
-"Drawer":document.getElementById("add_drawer").value,
+}
 
-"Area":document.getElementById("add_area").value,
-
-"Notes":document.getElementById("add_notes").value
-
-};
-
-const response=await fetch(SUPABASE_URL+"Parts",{
+await fetch(API,{
 
 method:"POST",
 
 headers:{
-apikey:SUPABASE_KEY,
-Authorization:"Bearer "+SUPABASE_KEY,
 "Content-Type":"application/json",
-Prefer:"return=minimal"
+apikey:API_KEY,
+Authorization:"Bearer " + API_KEY
 },
 
 body:JSON.stringify(newPart)
 
-});
+})
 
-if(response.ok){
+alert("Part Added")
 
-document.getElementById("saveMessage").innerHTML =
-`<div class="success">Part added successfully.</div>`;
+loadParts()
 
-document.querySelectorAll("#addPage input,#addPage textarea")
-.forEach(i=>i.value="");
+showPage("searchPage")
 
-loadParts();
-
-}else{
-
-document.getElementById("saveMessage").innerHTML =
-`<div class="error">${await response.text()}</div>`;
-}
 }
 
-loadParts();
+loadParts()
 
 </script>
 
