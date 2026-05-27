@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Workshop Inventory</title>
 
 <style>
@@ -15,8 +18,8 @@ body{
 
 header{
     background:#111;
+    border-bottom:4px solid #cc0000;
     padding:20px;
-    border-bottom:3px solid #cc0000;
 }
 
 h1{
@@ -34,13 +37,14 @@ nav button{
     color:white;
     padding:12px 20px;
     margin-right:10px;
-    border-radius:8px;
+    border-radius:10px;
+    font-size:16px;
     cursor:pointer;
     font-weight:bold;
 }
 
 nav button:hover{
-    background:#ff2b2b;
+    background:#ff3b3b;
 }
 
 .page{
@@ -80,6 +84,43 @@ input{
     font-weight:bold;
 }
 
+.card button{
+    background:#cc0000;
+    border:none;
+    color:white;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.card button:hover{
+    background:#ff2b2b;
+}
+
+.add-form{
+    max-width:700px;
+}
+
+.add-form input{
+    font-size:18px;
+}
+
+.add-form button{
+    background:#cc0000;
+    border:none;
+    color:white;
+    width:100%;
+    padding:15px;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.add-form button:hover{
+    background:#ff2b2b;
+}
+
 .map-container{
     display:flex;
     gap:30px;
@@ -87,11 +128,11 @@ input{
 }
 
 .workshop{
-    width:900px;
-    height:700px;
+    width:980px;
+    height:760px;
     background:#efefef;
-    position:relative;
     border:4px solid black;
+    position:relative;
 }
 
 .box{
@@ -102,18 +143,18 @@ input{
     justify-content:center;
     align-items:center;
     text-align:center;
-    font-weight:bold;
     color:black;
+    font-weight:bold;
 }
 
 .highlight{
-    background:#00ff66 !important;
+    background:#00ff55 !important;
     animation:flash 1s infinite;
 }
 
 @keyframes flash{
     0%{opacity:1;}
-    50%{opacity:0.5;}
+    50%{opacity:0.4;}
     100%{opacity:1;}
 }
 
@@ -124,9 +165,9 @@ input{
 }
 
 .shelf-box{
-    width:260px;
-    border:2px solid black;
+    width:280px;
     background:#dce6f2;
+    border:2px solid black;
     color:black;
 }
 
@@ -144,42 +185,31 @@ input{
     text-align:center;
 }
 
-.add-form{
-    max-width:700px;
-}
-
-.add-form input{
-    font-size:18px;
-}
-
-.add-form button{
-    background:#cc0000;
-    color:white;
-    border:none;
-    padding:15px;
-    width:100%;
-    border-radius:10px;
-    font-size:18px;
-    cursor:pointer;
-}
-
-.add-form button:hover{
-    background:#ff2b2b;
-}
-
 </style>
 </head>
 
 <body>
 
 <header>
+
 <h1>Workshop Inventory</h1>
 
 <nav>
-<button onclick="showPage('searchPage')">Search</button>
-<button onclick="showPage('addPage')">Add Part</button>
-<button onclick="showPage('mapPage')">Map View</button>
+
+<button onclick="showPage('searchPage')">
+Search Parts
+</button>
+
+<button onclick="showPage('addPage')">
+Add New Part
+</button>
+
+<button onclick="showPage('mapPage')">
+Map View
+</button>
+
 </nav>
+
 </header>
 
 <!-- SEARCH PAGE -->
@@ -212,7 +242,9 @@ oninput="searchParts()"
 <input id="newShelf" placeholder="Shelf">
 <input id="newQuantity" placeholder="Quantity">
 
-<button onclick="addPart()">Add Part</button>
+<button onclick="addPart()">
+Add Part
+</button>
 
 </div>
 
@@ -230,69 +262,69 @@ oninput="searchParts()"
 
 <!-- TOP RACKS -->
 
-<div class="box rack" id="Rack 13"
+<div class="box" id="Rack 13"
 style="top:40px;left:40px;width:260px;height:70px;">
 Rack 13
 </div>
 
-<div class="box rack" id="Rack 14"
+<div class="box" id="Rack 14"
 style="top:40px;left:300px;width:260px;height:70px;">
 Rack 14
 </div>
 
-<div class="box rack" id="Rack 15"
+<div class="box" id="Rack 15"
 style="top:40px;left:560px;width:260px;height:70px;">
 Rack 15
 </div>
 
-<div class="box rack" id="Rack 16"
+<div class="box" id="Rack 16"
 style="top:110px;left:40px;width:260px;height:70px;">
 Rack 16
 </div>
 
-<div class="box rack" id="Rack 17"
+<div class="box" id="Rack 17"
 style="top:110px;left:300px;width:260px;height:70px;">
 Rack 17
 </div>
 
-<div class="box rack" id="Rack 18"
+<div class="box" id="Rack 18"
 style="top:110px;left:560px;width:260px;height:70px;">
 Rack 18
 </div>
 
-<!-- DRAWERS -->
+<!-- LEFT SIDE -->
 
 <div class="box"
-style="top:240px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
+style="top:250px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
 Right Drawer
 </div>
 
 <div class="box"
-style="top:430px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
+style="top:450px;left:-10px;width:70px;height:160px;writing-mode:vertical-rl;">
 Left Drawer
-</div>
-
-<!-- CUPBOARD -->
-
-<div class="box rack" id="Cupboard 1"
-style="bottom:60px;left:40px;width:280px;height:60px;">
-Cupboard 1
 </div>
 
 <!-- BENCH -->
 
 <div class="box"
-style="top:400px;left:180px;width:350px;height:130px;background:#ddd9cf;">
+style="top:420px;left:180px;width:350px;height:130px;background:#ddd9cf;">
 Bench
 </div>
 
 <div class="box"
-style="top:530px;left:390px;width:140px;height:160px;background:#ddd9cf;">
+style="top:550px;left:390px;width:140px;height:150px;background:#ddd9cf;">
+</div>
+
+<!-- CUPBOARD -->
+
+<div class="box" id="Cupboard 1"
+style="bottom:60px;left:40px;width:280px;height:60px;">
+Cupboard 1
 </div>
 
 <!-- RACK 19 -->
 
-<div class="box rack" id="Rack 19"
+<div class="box" id="Rack 19"
 style="bottom:60px;right:60px;width:280px;height:60px;">
 Rack 19
 </div>
@@ -303,9 +335,49 @@ Rack 19
 
 <div class="side-panel">
 
+<!-- LEFT DRAWER -->
+
 <div class="shelf-box">
 
-<div class="shelf-title">Rack Shelves</div>
+<div class="shelf-title">
+Left Drawer
+</div>
+
+<div class="shelf" id="Drawer 1">Drawer 1</div>
+<div class="shelf" id="Drawer 2">Drawer 2</div>
+<div class="shelf" id="Drawer 3">Drawer 3</div>
+<div class="shelf" id="Drawer 4">Drawer 4</div>
+<div class="shelf" id="Drawer 5">Drawer 5</div>
+<div class="shelf" id="Drawer 6">Drawer 6</div>
+<div class="shelf" id="Drawer 7">Drawer 7</div>
+
+</div>
+
+<!-- RIGHT DRAWER -->
+
+<div class="shelf-box">
+
+<div class="shelf-title">
+Right Drawer
+</div>
+
+<div class="shelf">Drawer 1</div>
+<div class="shelf">Drawer 2</div>
+<div class="shelf">Drawer 3</div>
+<div class="shelf">Drawer 4</div>
+<div class="shelf">Drawer 5</div>
+<div class="shelf">Drawer 6</div>
+<div class="shelf">Drawer 7</div>
+
+</div>
+
+<!-- CUPBOARD -->
+
+<div class="shelf-box">
+
+<div class="shelf-title">
+Cupboard 1
+</div>
 
 <div class="shelf" id="Shelf 1">Shelf 1</div>
 <div class="shelf" id="Shelf 2">Shelf 2</div>
@@ -397,8 +469,7 @@ document.getElementById("results").innerHTML =
 parts
 .filter(part =>
 
-part.rack !== "Unknown" &&
-part.shelf !== "Unknown"
+(part.rack || "").toLowerCase() !== "unknown"
 
 )
 
@@ -410,24 +481,27 @@ part.shelf !== "Unknown"
 
 <p><b>Supplier:</b> ${part.supplier_name || ""}</p>
 
-<p><b>MPN:</b> ${part.manufacturer_part_number || ""}</p>
+<p><b>Manufacturer Part Number:</b>
+${part.manufacturer_part_number || ""}
+</p>
 
-<p><b>Type:</b> ${part.part_type || ""}</p>
+<p><b>Part Type:</b>
+${part.part_type || ""}
+</p>
 
-<p><b>Quantity:</b> ${part.quantity || ""}</p>
+<p><b>Quantity:</b>
+${part.quantity || ""}
+</p>
 
 <p class="location">
+
 ${part.rack || ""}
 -
 ${part.shelf || ""}
+
 </p>
 
-<button onclick="
-showMap(
-'${part.rack}',
-'${part.shelf}'
-)
-">
+<button onclick='showMap(${JSON.stringify(part.rack || "")}, ${JSON.stringify(part.shelf || "")})'>
 View Location on Map
 </button>
 
@@ -442,6 +516,14 @@ function clearHighlights(){
 document
 .querySelectorAll(".highlight")
 .forEach(el=>el.classList.remove("highlight"))
+
+}
+
+function normalise(value){
+
+return String(value || "")
+.toLowerCase()
+.trim()
 
 }
 
@@ -460,6 +542,11 @@ document.getElementById(shelf)
 if(rackElement){
 
 rackElement.classList.add("highlight")
+
+rackElement.scrollIntoView({
+behavior:"smooth",
+block:"center"
+})
 
 }
 
