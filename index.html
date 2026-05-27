@@ -1,56 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Parts Search</title>
+  <title>Parts Inventory Search</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
     body{
-      background:#000;
+      margin:0;
+      background:#0d0f14;
       color:white;
-      font-family:Arial;
-      padding:20px;
+      font-family:Arial, sans-serif;
+    }
+
+    .header{
+      background:#151922;
+      padding:25px;
+      border-bottom:4px solid #f5a623;
     }
 
     h1{
-      font-size:64px;
+      margin:0;
+      font-size:42px;
+    }
+
+    .subtitle{
+      color:#b5b5b5;
+      margin-top:8px;
+      font-size:16px;
+    }
+
+    .container{
+      padding:20px;
+      max-width:900px;
+      margin:auto;
     }
 
     input{
       width:100%;
-      padding:25px;
-      font-size:28px;
-      border:none;
-      margin-bottom:30px;
+      box-sizing:border-box;
+      padding:18px;
+      font-size:22px;
+      border-radius:12px;
+      border:2px solid #333;
+      margin-bottom:20px;
     }
 
     .part{
-      background:#1a1a1a;
-      padding:20px;
+      background:#1b1f29;
+      padding:18px;
       margin-bottom:15px;
+      border-radius:14px;
+      border-left:6px solid #f5a623;
+    }
+
+    .part-name{
+      font-size:24px;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .location{
+      background:#f5a623;
+      color:#111;
+      padding:12px;
       border-radius:10px;
-      font-size:22px;
+      font-size:20px;
+      font-weight:bold;
+      margin:12px 0;
+    }
+
+    .details{
+      color:#ddd;
+      line-height:1.6;
+      font-size:16px;
     }
 
     .error{
       color:#ff7b7b;
-      font-size:28px;
+      font-size:22px;
       font-weight:bold;
+    }
+
+    .count{
+      color:#aaa;
+      margin-bottom:15px;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Parts Search</h1>
+<div class="header">
+  <h1>Parts Inventory</h1>
+  <div class="subtitle">Search by part name, supplier, part number, type, rack or shelf</div>
+</div>
 
-<input id="search" placeholder="Search parts...">
-
-<div id="results">Loading...</div>
+<div class="container">
+  <input id="search" placeholder="Search parts...">
+  <div id="count"></div>
+  <div id="results">Loading parts...</div>
+</div>
 
 <script>
-
-const SUPABASE_URL = "https://snbavhdmagfufvpiocrf.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
 
@@ -83,7 +134,7 @@ async function loadParts() {
 
     if(allParts.length === 0){
       document.getElementById("results").innerHTML =
-      '<div class="error">NO DATA FOUND</div>';
+      '<div class="error">NO PARTS FOUND</div>';
       return;
     }
 
@@ -100,16 +151,29 @@ async function loadParts() {
 
 function showParts(parts){
 
+  document.getElementById("count").innerHTML =
+    '<div class="count">Showing ' + parts.length + ' part(s)</div>';
+
+  if(parts.length === 0){
+    document.getElementById("results").innerHTML =
+    '<div class="error">No matching parts found.</div>';
+    return;
+  }
+
   document.getElementById("results").innerHTML =
   parts.map(part => `
     <div class="part">
-      <b>${part.part_name || ""}</b><br><br>
+      <div class="part-name">${part.part_name || "Unnamed part"}</div>
 
-      Supplier: ${part.supplier_name || ""}<br>
+      <div class="location">
+        Location: Rack ${part.rack || "-"} | Shelf ${part.shelf || "-"}
+      </div>
 
-      Part Number: ${part.manufacturer_part_number || ""}<br>
-
-      Type: ${part.part_type || ""}
+      <div class="details">
+        <b>Supplier:</b> ${part.supplier_name || "-"}<br>
+        <b>Part Number:</b> ${part.manufacturer_part_number || "-"}<br>
+        <b>Type:</b> ${part.part_type || "-"}
+      </div>
     </div>
   `).join("");
 
@@ -120,9 +184,7 @@ document.getElementById("search").addEventListener("input", function(e){
   const search = e.target.value.toLowerCase();
 
   const filtered = allParts.filter(part =>
-
     JSON.stringify(part).toLowerCase().includes(search)
-
   );
 
   showParts(filtered);
