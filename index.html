@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -145,10 +145,12 @@ input{
     text-align:center;
     color:black;
     font-weight:bold;
+    transition:0.3s;
 }
 
 .highlight{
     background:#00ff55 !important;
+    box-shadow:0 0 25px #00ff55;
     animation:flash 1s infinite;
 }
 
@@ -183,9 +185,15 @@ input{
     border-top:1px solid black;
     padding:8px;
     text-align:center;
+    transition:0.3s;
+}
+
+.shelf.highlight{
+    background:#00ff55 !important;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -238,8 +246,8 @@ oninput="searchParts()"
 <input id="newSupplier" placeholder="Supplier">
 <input id="newMPN" placeholder="Manufacturer Part Number">
 <input id="newType" placeholder="Part Type">
-<input id="newRack" placeholder="Rack">
-<input id="newShelf" placeholder="Shelf">
+<input id="newRack" placeholder="Rack Number Only (e.g. 17)">
+<input id="newShelf" placeholder="Shelf Number Only (e.g. 3)">
 <input id="newQuantity" placeholder="Quantity">
 
 <button onclick="addPart()">
@@ -262,32 +270,32 @@ Add Part
 
 <!-- TOP RACKS -->
 
-<div class="box" id="Rack 13"
+<div class="box" id="rack-13"
 style="top:40px;left:40px;width:260px;height:70px;">
 Rack 13
 </div>
 
-<div class="box" id="Rack 14"
+<div class="box" id="rack-14"
 style="top:40px;left:300px;width:260px;height:70px;">
 Rack 14
 </div>
 
-<div class="box" id="Rack 15"
+<div class="box" id="rack-15"
 style="top:40px;left:560px;width:260px;height:70px;">
 Rack 15
 </div>
 
-<div class="box" id="Rack 16"
+<div class="box" id="rack-16"
 style="top:110px;left:40px;width:260px;height:70px;">
 Rack 16
 </div>
 
-<div class="box" id="Rack 17"
+<div class="box" id="rack-17"
 style="top:110px;left:300px;width:260px;height:70px;">
 Rack 17
 </div>
 
-<div class="box" id="Rack 18"
+<div class="box" id="rack-18"
 style="top:110px;left:560px;width:260px;height:70px;">
 Rack 18
 </div>
@@ -317,74 +325,36 @@ style="top:550px;left:390px;width:140px;height:150px;background:#ddd9cf;">
 
 <!-- CUPBOARD -->
 
-<div class="box" id="Cupboard 1"
+<div class="box" id="cupboard-1"
 style="bottom:60px;left:40px;width:280px;height:60px;">
 Cupboard 1
 </div>
 
 <!-- RACK 19 -->
 
-<div class="box" id="Rack 19"
+<div class="box" id="rack-19"
 style="bottom:60px;right:60px;width:280px;height:60px;">
 Rack 19
 </div>
 
 </div>
 
-<!-- RIGHT PANELS -->
+<!-- RIGHT SIDE PANELS -->
 
 <div class="side-panel">
 
-<!-- LEFT DRAWER -->
-
 <div class="shelf-box">
 
 <div class="shelf-title">
-Left Drawer
+Shelves
 </div>
 
-<div class="shelf" id="Drawer 1">Drawer 1</div>
-<div class="shelf" id="Drawer 2">Drawer 2</div>
-<div class="shelf" id="Drawer 3">Drawer 3</div>
-<div class="shelf" id="Drawer 4">Drawer 4</div>
-<div class="shelf" id="Drawer 5">Drawer 5</div>
-<div class="shelf" id="Drawer 6">Drawer 6</div>
-<div class="shelf" id="Drawer 7">Drawer 7</div>
-
-</div>
-
-<!-- RIGHT DRAWER -->
-
-<div class="shelf-box">
-
-<div class="shelf-title">
-Right Drawer
-</div>
-
-<div class="shelf">Drawer 1</div>
-<div class="shelf">Drawer 2</div>
-<div class="shelf">Drawer 3</div>
-<div class="shelf">Drawer 4</div>
-<div class="shelf">Drawer 5</div>
-<div class="shelf">Drawer 6</div>
-<div class="shelf">Drawer 7</div>
-
-</div>
-
-<!-- CUPBOARD -->
-
-<div class="shelf-box">
-
-<div class="shelf-title">
-Cupboard 1
-</div>
-
-<div class="shelf" id="Shelf 1">Shelf 1</div>
-<div class="shelf" id="Shelf 2">Shelf 2</div>
-<div class="shelf" id="Shelf 3">Shelf 3</div>
-<div class="shelf" id="Shelf 4">Shelf 4</div>
-<div class="shelf" id="Shelf 5">Shelf 5</div>
-<div class="shelf" id="Shelf 6">Shelf 6</div>
+<div class="shelf" id="shelf-1">Shelf 1</div>
+<div class="shelf" id="shelf-2">Shelf 2</div>
+<div class="shelf" id="shelf-3">Shelf 3</div>
+<div class="shelf" id="shelf-4">Shelf 4</div>
+<div class="shelf" id="shelf-5">Shelf 5</div>
+<div class="shelf" id="shelf-6">Shelf 6</div>
 
 </div>
 
@@ -425,7 +395,7 @@ Authorization:"Bearer " + API_KEY
 
 const data = await response.json()
 
-allParts = data
+allParts = data || []
 
 showParts(allParts)
 
@@ -466,20 +436,15 @@ function showParts(parts){
 
 document.getElementById("results").innerHTML =
 
-parts
-.filter(part =>
-
-(part.rack || "").toLowerCase() !== "unknown"
-
-)
-
-.map(part => `
+parts.map(part => `
 
 <div class="card">
 
 <h2>${part.part_name || ""}</h2>
 
-<p><b>Supplier:</b> ${part.supplier_name || ""}</p>
+<p><b>Supplier:</b>
+${part.supplier_name || ""}
+</p>
 
 <p><b>Manufacturer Part Number:</b>
 ${part.manufacturer_part_number || ""}
@@ -495,14 +460,23 @@ ${part.quantity || ""}
 
 <p class="location">
 
-${part.rack || ""}
+Rack ${part.rack || ""}
+
 -
-${part.shelf || ""}
+
+Shelf ${part.shelf || ""}
 
 </p>
 
-<button onclick='showMap(${JSON.stringify(part.rack || "")}, ${JSON.stringify(part.shelf || "")})'>
+<button onclick="
+showMap(
+'${part.rack || ""}',
+'${part.shelf || ""}'
+)
+">
+
 View Location on Map
+
 </button>
 
 </div>
@@ -519,25 +493,33 @@ document
 
 }
 
-function normalise(value){
-
-return String(value || "")
-.toLowerCase()
-.trim()
-
-}
-
 function showMap(rack,shelf){
 
 showPage("mapPage")
 
 clearHighlights()
 
+rack =
+String(rack || "")
+.replace("Rack","")
+.replace("rack","")
+.trim()
+
+shelf =
+String(shelf || "")
+.replace("Shelf","")
+.replace("shelf","")
+.trim()
+
 const rackElement =
-document.getElementById(rack)
+document.getElementById("rack-" + rack)
 
 const shelfElement =
-document.getElementById(shelf)
+document.getElementById("shelf-" + shelf)
+
+console.log("Looking for:",
+"rack-" + rack,
+"shelf-" + shelf)
 
 if(rackElement){
 
