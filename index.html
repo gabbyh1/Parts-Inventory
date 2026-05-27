@@ -1,403 +1,420 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Parts Inventory</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STT Parts Inventory</title>
 
-<style>
-body{
-  margin:0;
-  background:#0b0b0b;
-  color:white;
-  font-family:Arial, sans-serif;
-}
+  <style>
 
-.header{
-  background:#111;
-  padding:25px;
-  border-bottom:5px solid #c1121f;
-}
+    body{
+      margin:0;
+      font-family:Arial;
+      background:#0b0b0b;
+      color:white;
+    }
 
-h1{
-  margin:0;
-  font-size:38px;
-}
+    .topbar{
+      background:#b30000;
+      padding:20px;
+      display:flex;
+      gap:15px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
-.container{
-  padding:20px;
-  max-width:1000px;
-  margin:auto;
-}
+    .topbar h1{
+      margin:0;
+      margin-right:auto;
+    }
 
-.nav-btn, button{
-  width:100%;
-  padding:16px;
-  margin:8px 0;
-  border:none;
-  border-radius:12px;
-  background:#c1121f;
-  color:white;
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
-}
+    button{
+      background:#ff1a1a;
+      border:none;
+      color:white;
+      padding:12px 18px;
+      border-radius:8px;
+      font-size:16px;
+      cursor:pointer;
+      font-weight:bold;
+    }
 
-.nav-btn:hover, button:hover{
-  background:#8f0d17;
-}
+    button:hover{
+      background:#ff4d4d;
+    }
 
-.back{
-  background:#333;
-}
+    .page{
+      display:none;
+      padding:20px;
+    }
 
-input, textarea{
-  width:100%;
-  box-sizing:border-box;
-  padding:16px;
-  font-size:18px;
-  border-radius:12px;
-  border:2px solid #333;
-  margin-bottom:14px;
-}
+    .active{
+      display:block;
+    }
 
-textarea{
-  min-height:90px;
-}
+    input, textarea{
+      width:100%;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      border:none;
+      font-size:18px;
+      background:#1a1a1a;
+      color:white;
+    }
 
-.part, .mapbox, .formbox{
-  background:#181818;
-  padding:18px;
-  margin-bottom:16px;
-  border-radius:14px;
-  border-left:6px solid #c1121f;
-}
+    .card{
+      background:#151515;
+      border-left:5px solid #ff1a1a;
+      padding:20px;
+      margin-bottom:15px;
+      border-radius:10px;
+    }
 
-.location{
-  background:#c1121f;
-  color:white;
-  padding:12px;
-  border-radius:10px;
-  font-weight:bold;
-  margin:12px 0;
-}
+    .title{
+      font-size:24px;
+      font-weight:bold;
+      color:#ff4d4d;
+      margin-bottom:10px;
+    }
 
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
+    .location{
+      color:#ff9999;
+      font-weight:bold;
+      margin-top:10px;
+    }
 
-.field{
-  background:#101010;
-  padding:10px;
-  border-radius:10px;
-}
+    .mapBox{
+      background:#151515;
+      padding:20px;
+      border-radius:10px;
+      margin-bottom:20px;
+      border-left:5px solid red;
+    }
 
-.label{
-  color:#ff9b9b;
-  font-size:13px;
-  text-transform:uppercase;
-}
-
-.value{
-  font-size:16px;
-}
-
-.hidden{
-  display:none;
-}
-
-.error{
-  color:#ff7b7b;
-  font-weight:bold;
-}
-
-.success{
-  color:#7cff9b;
-  font-weight:bold;
-}
-
-@media(max-width:700px){
-  .grid{
-    grid-template-columns:1fr;
-  }
-}
-</style>
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h1>Parts Inventory</h1>
+<div class="topbar">
+  <h1>STT Parts Inventory</h1>
+
+  <button onclick="showPage('searchPage')">
+    Search Parts
+  </button>
+
+  <button onclick="showPage('addPage')">
+    Add New Part
+  </button>
+
+  <button onclick="showPage('mapPage')">
+    Shelf Map
+  </button>
 </div>
 
-<div class="container">
-
 <!-- SEARCH PAGE -->
-<div id="searchPage">
 
-  <button class="nav-btn" onclick="showPage('addPage')">Add New Part</button>
-  <button class="nav-btn" onclick="showPage('mapPage')">Shelf Map</button>
+<div id="searchPage" class="page active">
 
   <h2>Search Parts</h2>
 
-  <input id="search" placeholder="Search part name, supplier, part number, type, rack, shelf, drawer or area...">
+  <input
+    type="text"
+    id="search"
+    placeholder="Search by part name, supplier, MPN, type..."
+  >
 
-  <div id="results">Loading parts...</div>
+  <div id="results"></div>
 
 </div>
 
-<!-- ADD PART PAGE -->
-<div id="addPage" class="hidden">
+<!-- ADD PAGE -->
 
-  <button class="back" onclick="showPage('searchPage')">Back to Search</button>
+<div id="addPage" class="page">
 
   <h2>Add New Part</h2>
 
-  <div class="formbox">
-    <input id="newPartName" placeholder="Part Name">
-    <input id="newSupplier" placeholder="Supplier Name">
-    <input id="newMPN" placeholder="Manufacturer Part Number">
-    <input id="newType" placeholder="Part Type">
-    <textarea id="newDescription" placeholder="Description"></textarea>
-    <input id="newRack" placeholder="Rack">
-    <input id="newShelf" placeholder="Shelf">
-    <input id="newDrawer" placeholder="Drawer">
-    <input id="newArea" placeholder="Area">
-    <textarea id="newNotes" placeholder="Notes"></textarea>
+  <input id="part_name" placeholder="Part Name">
+  <input id="supplier_name" placeholder="Supplier Name">
+  <input id="manufacturer_part_number" placeholder="Manufacturer Part Number">
+  <input id="part_type" placeholder="Part Type">
+  <input id="rack" placeholder="Rack">
+  <input id="shelf" placeholder="Shelf">
+  <input id="drawer" placeholder="Drawer">
+  <input id="quantity" placeholder="Quantity">
+  <textarea id="description" placeholder="Description"></textarea>
 
-    <button onclick="addPart()">Save New Part</button>
+  <button onclick="addPart()">
+    Save Part
+  </button>
 
-    <div id="addMessage"></div>
-  </div>
+  <div id="saveMessage"></div>
 
 </div>
 
 <!-- MAP PAGE -->
-<div id="mapPage" class="hidden">
 
-  <button class="back" onclick="showPage('searchPage')">Back to Search</button>
+<div id="mapPage" class="page">
 
   <h2>Shelf Map</h2>
 
-  <div id="mapResults">Loading shelf map...</div>
+  <div id="mapResults"></div>
 
 </div>
 
-</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const SUPABASE_URL = "https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/";
-const SUPABASE_KEY = "sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
 
-let allParts = [];
+const SUPABASE_URL =
+"https://snbavhdmagfufvpiocrf.supabase.co"
 
-function safe(value){
-  return value === null || value === undefined || value === "" ? "-" : value;
-}
+const SUPABASE_KEY =
+"YOUR_ANON_KEY_HERE"
 
-function showPage(page){
-  document.getElementById("searchPage").classList.add("hidden");
-  document.getElementById("addPage").classList.add("hidden");
-  document.getElementById("mapPage").classList.add("hidden");
+const client =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+)
 
-  document.getElementById(page).classList.remove("hidden");
-
-  if(page === "mapPage"){
-    showMap();
-  }
-}
+let allParts = []
 
 async function loadParts(){
 
-  const response = await fetch(
-    SUPABASE_URL + "parts_public",
-    {
-      headers:{
-        apikey: SUPABASE_KEY,
-        Authorization:"Bearer " + SUPABASE_KEY
-      }
-    }
-  );
+  const { data, error } = await client
+    .from("parts_public")
+    .select("*")
+    .limit(1000)
 
-  const data = await response.json();
-
-  if(data.code){
+  if(error){
     document.getElementById("results").innerHTML =
-      '<div class="error">ERROR: ' + JSON.stringify(data) + '</div>';
-    return;
+      "<h2 style='color:red'>ERROR: "
+      + JSON.stringify(error)
+      + "</h2>"
+
+    return
   }
 
-  allParts = data;
-  showParts(allParts);
+  allParts = data || []
+
+  showParts(allParts)
+
+  showMap()
 }
-
-document.getElementById("search").addEventListener("input", function(){
-
-  const value = this.value.toLowerCase();
-
-  const filtered = allParts.filter(part =>
-    JSON.stringify(part).toLowerCase().includes(value)
-  );
-
-  showParts(filtered);
-});
 
 function showParts(parts){
 
-  if(parts.length === 0){
-    document.getElementById("results").innerHTML =
-      '<div class="error">No parts found.</div>';
-    return;
-  }
-
   document.getElementById("results").innerHTML =
     parts.map(part => `
-      <div class="part">
-        <h2>${safe(part.part_name)}</h2>
+
+      <div class="card">
+
+        <div class="title">
+          ${part.part_name || ""}
+        </div>
+
+        <b>Supplier:</b>
+        ${part.supplier_name || ""}
+
+        <br><br>
+
+        <b>Manufacturer Part Number:</b>
+        ${part.manufacturer_part_number || ""}
+
+        <br><br>
+
+        <b>Part Type:</b>
+        ${part.part_type || ""}
+
+        <br><br>
+
+        <b>Quantity:</b>
+        ${part.quantity || ""}
+
+        <br><br>
+
+        <b>Description:</b>
+        ${part.description || ""}
 
         <div class="location">
-          Rack ${safe(part.rack)} | Shelf ${safe(part.shelf)} | Drawer ${safe(part.drawer)} | Area ${safe(part.area)}
+
+          ${part.rack ? "Rack: " + part.rack : ""}
+
+          ${part.shelf ? " | Shelf: " + part.shelf : ""}
+
+          ${part.drawer ? " | Drawer: " + part.drawer : ""}
+
         </div>
 
-        <div class="grid">
-          <div class="field">
-            <div class="label">Supplier</div>
-            <div class="value">${safe(part.supplier_name)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Manufacturer Part Number</div>
-            <div class="value">${safe(part.manufacturer_part_number)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Part Type</div>
-            <div class="value">${safe(part.part_type)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Description</div>
-            <div class="value">${safe(part.description)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Rack</div>
-            <div class="value">${safe(part.rack)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Shelf</div>
-            <div class="value">${safe(part.shelf)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Drawer</div>
-            <div class="value">${safe(part.drawer)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Area</div>
-            <div class="value">${safe(part.area)}</div>
-          </div>
-
-          <div class="field">
-            <div class="label">Notes</div>
-            <div class="value">${safe(part.notes)}</div>
-          </div>
-        </div>
       </div>
-    `).join("");
+
+    `).join("")
 }
+
+document.getElementById("search")
+.addEventListener("input", function(){
+
+  let value =
+    this.value.toLowerCase()
+
+  let filtered =
+    allParts.filter(part =>
+
+      (part.part_name || "")
+      .toLowerCase()
+      .includes(value)
+
+      ||
+
+      (part.supplier_name || "")
+      .toLowerCase()
+      .includes(value)
+
+      ||
+
+      (part.manufacturer_part_number || "")
+      .toLowerCase()
+      .includes(value)
+
+      ||
+
+      (part.part_type || "")
+      .toLowerCase()
+      .includes(value)
+
+    )
+
+  showParts(filtered)
+
+})
 
 async function addPart(){
 
   const newPart = {
-    "Part Name": document.getElementById("newPartName").value,
-    "Supplier Name": document.getElementById("newSupplier").value,
-    "Manufacturer Part Number": document.getElementById("newMPN").value,
-    "Part Type": document.getElementById("newType").value,
-    "Description": document.getElementById("newDescription").value,
-    "Rack": document.getElementById("newRack").value,
-    "Shelf": document.getElementById("newShelf").value,
-    "Drawer": document.getElementById("newDrawer").value,
-    "Area": document.getElementById("newArea").value,
-    "Notes": document.getElementById("newNotes").value
-  };
 
-  const response = await fetch(
-    SUPABASE_URL + "Parts",
-    {
-      method:"POST",
-      headers:{
-        apikey: SUPABASE_KEY,
-        Authorization:"Bearer " + SUPABASE_KEY,
-        "Content-Type":"application/json",
-        Prefer:"return=minimal"
-      },
-      body: JSON.stringify(newPart)
-    }
-  );
+    part_name:
+      document.getElementById("part_name").value,
 
-  if(response.ok){
+    supplier_name:
+      document.getElementById("supplier_name").value,
 
-    document.getElementById("addMessage").innerHTML =
-      '<div class="success">Part added successfully.</div>';
+    manufacturer_part_number:
+      document.getElementById("manufacturer_part_number").value,
 
-    document.querySelectorAll("#addPage input, #addPage textarea")
-      .forEach(input => input.value = "");
+    part_type:
+      document.getElementById("part_type").value,
 
-    loadParts();
+    rack:
+      document.getElementById("rack").value,
 
-  } else {
+    shelf:
+      document.getElementById("shelf").value,
 
-    const error = await response.text();
+    drawer:
+      document.getElementById("drawer").value,
 
-    document.getElementById("addMessage").innerHTML =
-      '<div class="error">' + error + '</div>';
+    quantity:
+      document.getElementById("quantity").value,
+
+    description:
+      document.getElementById("description").value
+
   }
+
+  const { error } = await client
+    .from("Parts")
+    .insert([newPart])
+
+  if(error){
+
+    document.getElementById("saveMessage").innerHTML =
+      "<h3 style='color:red'>"
+      + error.message
+      + "</h3>"
+
+    return
+  }
+
+  document.getElementById("saveMessage").innerHTML =
+    "<h3 style='color:lightgreen'>Part Added Successfully</h3>"
+
+  loadParts()
+}
+
+function showPage(pageId){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+      page.classList.remove("active")
+    })
+
+  document
+    .getElementById(pageId)
+    .classList.add("active")
 }
 
 function showMap(){
 
-  let grouped = {};
+  let grouped = {}
 
   allParts.forEach(part => {
 
-    let rack = part.rack || "Unknown Rack";
-    let shelf = part.shelf || "Unknown Shelf";
-    let drawer = part.drawer || "Unknown Drawer";
-    let area = part.area || "Unknown Area";
+    let rack = part.rack || ""
+    let shelf = part.shelf || ""
+    let drawer = part.drawer || ""
 
-    let key = "Rack " + rack + " | Shelf " + shelf + " | Drawer " + drawer + " | Area " + area;
+    let locationParts = []
+
+    if(rack)
+      locationParts.push("Rack " + rack)
+
+    if(shelf)
+      locationParts.push("Shelf " + shelf)
+
+    if(drawer)
+      locationParts.push("Drawer " + drawer)
+
+    if(locationParts.length === 0)
+      return
+
+    let key = locationParts.join(" | ")
 
     if(!grouped[key]){
-      grouped[key] = [];
+      grouped[key] = []
     }
 
-    grouped[key].push(part);
-  });
+    grouped[key].push(part.part_name)
+
+  })
+
+  let html = ""
+
+  Object.keys(grouped)
+    .sort()
+    .forEach(location => {
+
+      html += `
+
+        <div class="mapBox">
+
+          <h3>${location}</h3>
+
+          ${grouped[location]
+            .map(name => "• " + name)
+            .join("<br>")}
+
+        </div>
+
+      `
+    })
 
   document.getElementById("mapResults").innerHTML =
-    Object.keys(grouped).sort().map(location => `
-      <div class="mapbox">
-        <h2>${location}</h2>
-
-        ${grouped[location].map(part => `
-          <div>
-            <b>${safe(part.part_name)}</b>
-            <br>
-            <span style="color:#ccc;">
-              ${safe(part.manufacturer_part_number)} | ${safe(part.part_type)}
-            </span>
-            <hr style="border:0;border-top:1px solid #333;">
-          </div>
-        `).join("")}
-      </div>
-    `).join("");
+    html
 }
 
-loadParts();
+loadParts()
+
 </script>
 
 </body>
