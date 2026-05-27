@@ -3,90 +3,72 @@
 <head>
 <title>Parts Search</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-body{
-background:#111;
-color:white;
-font-family:Arial;
-padding:20px;
-}
-input{
-width:100%;
-padding:15px;
-font-size:18px;
-margin-bottom:20px;
-}
-.part{
-background:#222;
-padding:15px;
-margin-bottom:10px;
-border-radius:10px;
-}
+body{background:#111;color:white;font-family:Arial;padding:25px}
+input{width:100%;padding:18px;font-size:22px;margin-bottom:20px}
+.part{background:#222;padding:15px;margin:10px 0;border-radius:10px}
+.error{color:#ff7777;font-weight:bold}
 </style>
 </head>
 <body>
 
 <h1>Parts Search</h1>
-
-<input id="search" placeholder="Search parts">
-
-<div id="results"></div>
+<input id="search" placeholder="Search parts...">
+<div id="results">Loading parts...</div>
 
 <script>
+const SUPABASE_URL = "https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
 
-const supabase = window.supabase.createClient(
-"https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/",
-"sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt"
-)
+let allParts = [];
 
-async function loadParts(){
+async function loadParts() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/parts_public?select=*`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
 
-const { data, error } = await supabase
-.from('Parts')
-.select('*')
+  const text = await res.text();
 
-if(error){
-document.getElementById("results").innerHTML = "ERROR: " + error.message
-return
+  if (!res.ok) {
+    document.getElementById("results").innerHTML =
+      `<div class="error">ERROR: ${text}</div>`;
+    return;
+  }
+
+  allParts = JSON.parse(text);
+
+  if (allParts.length === 0) {
+    document.getElementById("results").innerHTML =
+      `<div class="error">NO DATA RETURNED</div>`;
+    return;
+  }
+
+  showParts(allParts);
 }
 
-if(!data || data.length === 0){
-document.getElementById("results").innerHTML = "NO DATA RETURNED"
-return
+function showParts(parts) {
+  document.getElementById("results").innerHTML = parts.map(p => `
+    <div class="part">
+      <b>${p.part_name || ""}</b><br>
+      Supplier: ${p.supplier_name || ""}<br>
+      Part No: ${p.manufacturer_part_number || ""}<br>
+      Type: ${p.part_type || ""}
+    </div>
+  `).join("");
 }
-
-showParts(data)
 
 document.getElementById("search").addEventListener("input", e => {
+  const term = e.target.value.toLowerCase();
+  const filtered = allParts.filter(p =>
+    JSON.stringify(p).toLowerCase().includes(term)
+  );
+  showParts(filtered);
+});
 
-const search = e.target.value.toLowerCase()
-
-const filtered = data.filter(part =>
-JSON.stringify(part).toLowerCase().includes(search)
-)
-
-showParts(filtered)
-
-})
-
-}
-
-function showParts(parts){
-
-document.getElementById("results").innerHTML =
-parts.map(part => `
-<div class="part">
-<b>${part["Part Name"] || ""}
-${part["Manufacturer Part Number"] || ""}
-${part["Part Type"] || ""}
-</div>
-`).join('')
-
-}
-
-loadParts()
-
+loadParts();
 </script>
 
 </body>
