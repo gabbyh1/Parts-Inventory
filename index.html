@@ -43,7 +43,7 @@ const supabase = window.supabase.createClient(
 async function loadParts(){
 
 const { data, error } = await supabase
-.from('parts_public')
+.from('Parts')
 .select('*')
 
 if(error){
@@ -72,9 +72,9 @@ function showParts(parts){
 document.getElementById("results").innerHTML =
 parts.map(part => `
 <div class="part">
-<b>${part.part_name || ""}</b><br>
-${part.manufacturer_part_number || ""}<br>
-${part.part_type || ""}
+<b>${part["Part Name"] || ""}
+${part["Manufacturer Part Number"] || ""}
+${part["Part Type"] || ""}
 </div>
 `).join('')
 
