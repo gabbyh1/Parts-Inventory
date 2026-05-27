@@ -248,7 +248,7 @@ oninput="searchParts()"
 
 <input
 id="newDrawer"
-placeholder="Drawer EXACTLY like: Left Drawer 3 OR Right Drawer 5"
+placeholder="Drawer EXACTLY like: L1 or R5"
 >
 
 <input id="newQuantity" placeholder="Quantity">
@@ -491,7 +491,7 @@ ${part.rack ? "Rack " + part.rack : ""}
 
 ${part.shelf ? " | Shelf " + part.shelf : ""}
 
-${part.drawer ? " | " + part.drawer : ""}
+${part.drawer ? " | Drawer " + part.drawer : ""}
 
 </p>
 
@@ -534,12 +534,6 @@ showPage("mapPage");
 
 clearHighlights();
 
-alert(
-"Rack: " + rack +
-"\nShelf: " + shelf +
-"\nDrawer: " + drawer
-);
-
 const rackNum =
 extractNumber(rack);
 
@@ -548,7 +542,8 @@ extractNumber(shelf);
 
 const drawerText =
 String(drawer || "")
-.toLowerCase();
+.toLowerCase()
+.trim();
 
 const drawerNum =
 extractNumber(drawerText);
@@ -563,7 +558,7 @@ ${rackNum ? "Rack " + rackNum + "<br>" : ""}
 
 ${shelfNum ? "Shelf " + shelfNum + "<br>" : ""}
 
-${drawer ? drawer : ""}
+${drawer ? "Drawer " + drawer : ""}
 
 </div>`;
 
@@ -581,13 +576,17 @@ if(shelfEl){
 shelfEl.classList.add("highlight");
 }
 
-if(drawerText.includes("left")){
+if(
+drawerText.startsWith("l")
+){
 
 document.getElementById("left-drawer-main")
 .classList.add("highlight");
 
 const leftRow =
-document.getElementById("left-drawer-" + drawerNum);
+document.getElementById(
+"left-drawer-" + drawerNum
+);
 
 if(leftRow){
 leftRow.classList.add("highlight");
@@ -595,13 +594,17 @@ leftRow.classList.add("highlight");
 
 }
 
-if(drawerText.includes("right")){
+if(
+drawerText.startsWith("r")
+){
 
 document.getElementById("right-drawer-main")
 .classList.add("highlight");
 
 const rightRow =
-document.getElementById("right-drawer-" + drawerNum);
+document.getElementById(
+"right-drawer-" + drawerNum
+);
 
 if(rightRow){
 rightRow.classList.add("highlight");
