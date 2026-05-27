@@ -26,9 +26,7 @@ color:#ff2b2b;
 font-size:26px;
 }
 
-nav{
-margin-top:10px;
-}
+nav{margin-top:10px}
 
 nav button{
 background:#cc0000;
@@ -46,9 +44,7 @@ display:none;
 padding:12px;
 }
 
-.active{
-display:block;
-}
+.active{display:block}
 
 input{
 width:100%;
@@ -170,19 +166,19 @@ text-align:center;
 transition:0.3s;
 }
 
-/* PHONE VIEW - FITS FULL MAP WITHOUT SCROLLING */
 @media(max-width:700px){
 
-body{
-overflow:hidden;
-}
-
-header{
-padding:8px;
+html, body{
+overflow-x:hidden;
+overflow-y:auto;
 }
 
 h1{
 font-size:18px;
+}
+
+header{
+padding:8px;
 }
 
 nav{
@@ -200,12 +196,31 @@ border-radius:6px;
 }
 
 .page{
-padding:6px;
+padding:8px;
 }
 
-#mapPage{
-height:calc(100vh - 78px);
+/* Search and add pages CAN scroll */
+#searchPage,
+#addPage{
+height:auto;
+overflow-y:auto;
+}
+
+/* Map page CANNOT scroll */
+body.map-mode{
 overflow:hidden;
+height:100vh;
+}
+
+body.map-mode #mapPage{
+height:calc(100vh - 76px);
+overflow:hidden;
+padding:4px;
+}
+
+body.map-mode header{
+height:60px;
+box-sizing:border-box;
 }
 
 #mapPage h2{
@@ -213,17 +228,18 @@ display:none;
 }
 
 #selectedInfo{
-font-size:10px;
+font-size:9px;
+line-height:1.1;
 }
 
 #selectedInfo .card{
-padding:6px;
-margin-bottom:4px;
-font-size:10px;
+padding:4px;
+margin-bottom:3px;
+font-size:9px;
 }
 
 .map-wrap{
-height:calc(100vh - 135px);
+height:calc(100vh - 118px);
 overflow:hidden;
 display:flex;
 justify-content:center;
@@ -231,7 +247,7 @@ align-items:flex-start;
 }
 
 .map-container{
-transform:scale(0.32);
+transform:scale(0.31);
 transform-origin:top center;
 }
 
@@ -251,22 +267,12 @@ padding:14px;
 
 }
 
-/* SMALLER PHONES */
 @media(max-width:390px){
-
-.map-container{
-transform:scale(0.29);
+.map-container{transform:scale(0.28)}
+.map-wrap{height:calc(100vh - 112px)}
 }
 
-.map-wrap{
-height:calc(100vh - 125px);
-}
-
-}
-
-/* TABLET VIEW */
 @media(min-width:701px) and (max-width:1100px){
-
 .map-container{
 transform:scale(0.72);
 transform-origin:top center;
@@ -276,7 +282,6 @@ transform-origin:top center;
 height:610px;
 overflow:hidden;
 }
-
 }
 </style>
 </head>
@@ -388,6 +393,12 @@ let allParts=[];
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 document.getElementById(page).classList.add("active");
+
+if(page === "mapPage"){
+document.body.classList.add("map-mode");
+}else{
+document.body.classList.remove("map-mode");
+}
 }
 
 async function loadParts(){
