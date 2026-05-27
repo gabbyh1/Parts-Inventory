@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Parts Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<style>
+body{
+background:#111;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+input{
+width:100%;
+padding:15px;
+font-size:18px;
+margin-bottom:20px;
+}
+.part{
+background:#222;
+padding:15px;
+margin-bottom:10px;
+border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<h1>Parts Search</h1>
+
+<input id="search" placeholder="Search parts">
+
+<div id="results"></div>
+
+<script>
+
+const supabase = window.supabase.createClient(
+"https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/",
+"sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt"
+)
+
+async function loadParts(){
+
+const { data, error } = await supabase
+.from('parts_public')
+.select('*')
+
+if(error){
+document.getElementById("results").innerHTML = error.message
+return
+}
+
+showParts(data)
+
+document.getElementById("search").addEventListener("input", e => {
+
+const search = e.target.value.toLowerCase()
+
+const filtered = data.filter(part =>
+JSON.stringify(part).toLowerCase().includes(search)
+)
+
+showParts(filtered)
+
+})
+
+}
+
+function showParts(parts){
+
+document.getElementById("results").innerHTML =
+parts.map(part => `
+<div class="part">
+<b>${part.part_name || ""}</b><br>
+${part.manufacturer_part_number || ""}<br>
+${part.part_type || ""}
+</div>
+`).join('')
+
+}
+
+loadParts()
+
+</script>
+
+</body>
+</html>
