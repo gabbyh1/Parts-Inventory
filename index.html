@@ -7,20 +7,20 @@
 <style>
 body{
   margin:0;
-  background:#0d0f14;
+  background:#0b0b0b;
   color:white;
   font-family:Arial, sans-serif;
 }
 
 .header{
-  background:#151922;
+  background:#111;
   padding:25px;
-  border-bottom:4px solid #c1121f;
+  border-bottom:5px solid #c1121f;
 }
 
 h1{
   margin:0;
-  font-size:40px;
+  font-size:38px;
 }
 
 .container{
@@ -29,10 +29,10 @@ h1{
   margin:auto;
 }
 
-button{
-  padding:15px;
-  margin:6px 0;
+.nav-btn, button{
   width:100%;
+  padding:16px;
+  margin:8px 0;
   border:none;
   border-radius:12px;
   background:#c1121f;
@@ -42,8 +42,12 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  background:#a30f1a;
+.nav-btn:hover, button:hover{
+  background:#8f0d17;
+}
+
+.back{
+  background:#333;
 }
 
 input, textarea{
@@ -52,18 +56,18 @@ input, textarea{
   padding:16px;
   font-size:18px;
   border-radius:12px;
-  margin-bottom:15px;
   border:2px solid #333;
+  margin-bottom:14px;
 }
 
 textarea{
   min-height:90px;
 }
 
-.part,.mapbox{
-  background:#1b1f29;
+.part, .mapbox, .formbox{
+  background:#181818;
   padding:18px;
-  margin-bottom:15px;
+  margin-bottom:16px;
   border-radius:14px;
   border-left:6px solid #c1121f;
 }
@@ -74,19 +78,33 @@ textarea{
   padding:12px;
   border-radius:10px;
   font-weight:bold;
-  margin:10px 0;
+  margin:12px 0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.field{
+  background:#101010;
+  padding:10px;
+  border-radius:10px;
+}
+
+.label{
+  color:#ff9b9b;
+  font-size:13px;
+  text-transform:uppercase;
+}
+
+.value{
+  font-size:16px;
 }
 
 .hidden{
   display:none;
-}
-
-.back{
-  background:#555;
-}
-
-.back:hover{
-  background:#444;
 }
 
 .error{
@@ -99,43 +117,9 @@ textarea{
   font-weight:bold;
 }
 
-.small-text{
-  color:#ccc;
-  line-height:1.6;
-}
-
-.field-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:12px;
-}
-
-.field{
-  background:#11141b;
-  padding:10px;
-  border-radius:10px;
-}
-
-.field-label{
-  color:#ffb3b3;
-  font-size:13px;
-  text-transform:uppercase;
-  margin-bottom:4px;
-}
-
-.field-value{
-  color:white;
-  font-size:16px;
-}
-
 @media(max-width:700px){
-  .field-grid{
+  .grid{
     grid-template-columns:1fr;
-  }
-
-  h1{
-    font-size:32px;
   }
 }
 </style>
@@ -149,25 +133,28 @@ textarea{
 
 <div class="container">
 
-  <div id="searchPage">
+<!-- SEARCH PAGE -->
+<div id="searchPage">
 
-    <button onclick="showPage('addPage')">Add New Part</button>
-    <button onclick="showPage('mapPage')">Map View</button>
+  <button class="nav-btn" onclick="showPage('addPage')">Add New Part</button>
+  <button class="nav-btn" onclick="showPage('mapPage')">Shelf Map</button>
 
-    <h2>Search Parts</h2>
+  <h2>Search Parts</h2>
 
-    <input id="search" placeholder="Search by part name, supplier, part number, type, rack, shelf, drawer, area or notes...">
+  <input id="search" placeholder="Search part name, supplier, part number, type, rack, shelf, drawer or area...">
 
-    <div id="results">Loading parts...</div>
+  <div id="results">Loading parts...</div>
 
-  </div>
+</div>
 
-  <div id="addPage" class="hidden">
+<!-- ADD PART PAGE -->
+<div id="addPage" class="hidden">
 
-    <button class="back" onclick="showPage('searchPage')">Back to Search</button>
+  <button class="back" onclick="showPage('searchPage')">Back to Search</button>
 
-    <h2>Add New Part</h2>
+  <h2>Add New Part</h2>
 
+  <div class="formbox">
     <input id="newPartName" placeholder="Part Name">
     <input id="newSupplier" placeholder="Supplier Name">
     <input id="newMPN" placeholder="Manufacturer Part Number">
@@ -182,18 +169,20 @@ textarea{
     <button onclick="addPart()">Save New Part</button>
 
     <div id="addMessage"></div>
-
   </div>
 
-  <div id="mapPage" class="hidden">
+</div>
 
-    <button class="back" onclick="showPage('searchPage')">Back to Search</button>
+<!-- MAP PAGE -->
+<div id="mapPage" class="hidden">
 
-    <h2>Map View</h2>
+  <button class="back" onclick="showPage('searchPage')">Back to Search</button>
 
-    <div id="mapResults">Loading map...</div>
+  <h2>Shelf Map</h2>
 
-  </div>
+  <div id="mapResults">Loading shelf map...</div>
+
+</div>
 
 </div>
 
@@ -208,7 +197,6 @@ function safe(value){
 }
 
 function showPage(page){
-
   document.getElementById("searchPage").classList.add("hidden");
   document.getElementById("addPage").classList.add("hidden");
   document.getElementById("mapPage").classList.add("hidden");
@@ -218,7 +206,6 @@ function showPage(page){
   if(page === "mapPage"){
     showMap();
   }
-
 }
 
 async function loadParts(){
@@ -228,7 +215,7 @@ async function loadParts(){
     {
       headers:{
         apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY
+        Authorization:"Bearer " + SUPABASE_KEY
       }
     }
   );
@@ -236,17 +223,13 @@ async function loadParts(){
   const data = await response.json();
 
   if(data.code){
-
     document.getElementById("results").innerHTML =
       '<div class="error">ERROR: ' + JSON.stringify(data) + '</div>';
-
     return;
   }
 
   allParts = data;
-
   showParts(allParts);
-
 }
 
 document.getElementById("search").addEventListener("input", function(){
@@ -258,7 +241,6 @@ document.getElementById("search").addEventListener("input", function(){
   );
 
   showParts(filtered);
-
 });
 
 function showParts(parts){
@@ -278,55 +260,54 @@ function showParts(parts){
           Rack ${safe(part.rack)} | Shelf ${safe(part.shelf)} | Drawer ${safe(part.drawer)} | Area ${safe(part.area)}
         </div>
 
-        <div class="field-grid">
+        <div class="grid">
           <div class="field">
-            <div class="field-label">Supplier</div>
-            <div class="field-value">${safe(part.supplier_name)}</div>
+            <div class="label">Supplier</div>
+            <div class="value">${safe(part.supplier_name)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Manufacturer Part Number</div>
-            <div class="field-value">${safe(part.manufacturer_part_number)}</div>
+            <div class="label">Manufacturer Part Number</div>
+            <div class="value">${safe(part.manufacturer_part_number)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Part Type</div>
-            <div class="field-value">${safe(part.part_type)}</div>
+            <div class="label">Part Type</div>
+            <div class="value">${safe(part.part_type)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Rack</div>
-            <div class="field-value">${safe(part.rack)}</div>
+            <div class="label">Description</div>
+            <div class="value">${safe(part.description)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Shelf</div>
-            <div class="field-value">${safe(part.shelf)}</div>
+            <div class="label">Rack</div>
+            <div class="value">${safe(part.rack)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Drawer</div>
-            <div class="field-value">${safe(part.drawer)}</div>
+            <div class="label">Shelf</div>
+            <div class="value">${safe(part.shelf)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Area</div>
-            <div class="field-value">${safe(part.area)}</div>
+            <div class="label">Drawer</div>
+            <div class="value">${safe(part.drawer)}</div>
           </div>
 
           <div class="field">
-            <div class="field-label">Description</div>
-            <div class="field-value">${safe(part.description)}</div>
+            <div class="label">Area</div>
+            <div class="value">${safe(part.area)}</div>
           </div>
-        </div>
 
-        <div class="field" style="margin-top:10px;">
-          <div class="field-label">Notes</div>
-          <div class="field-value">${safe(part.notes)}</div>
+          <div class="field">
+            <div class="label">Notes</div>
+            <div class="value">${safe(part.notes)}</div>
+          </div>
         </div>
       </div>
     `).join("");
-
 }
 
 async function addPart(){
@@ -363,7 +344,8 @@ async function addPart(){
     document.getElementById("addMessage").innerHTML =
       '<div class="success">Part added successfully.</div>';
 
-    document.querySelectorAll("#addPage input, #addPage textarea").forEach(input => input.value = "");
+    document.querySelectorAll("#addPage input, #addPage textarea")
+      .forEach(input => input.value = "");
 
     loadParts();
 
@@ -373,9 +355,7 @@ async function addPart(){
 
     document.getElementById("addMessage").innerHTML =
       '<div class="error">' + error + '</div>';
-
   }
-
 }
 
 function showMap(){
@@ -396,7 +376,6 @@ function showMap(){
     }
 
     grouped[key].push(part);
-
   });
 
   document.getElementById("mapResults").innerHTML =
@@ -405,16 +384,17 @@ function showMap(){
         <h2>${location}</h2>
 
         ${grouped[location].map(part => `
-          <div class="small-text">
+          <div>
             <b>${safe(part.part_name)}</b>
-            - ${safe(part.manufacturer_part_number)}
-            - ${safe(part.part_type)}
+            <br>
+            <span style="color:#ccc;">
+              ${safe(part.manufacturer_part_number)} | ${safe(part.part_type)}
+            </span>
+            <hr style="border:0;border-top:1px solid #333;">
           </div>
         `).join("")}
-
       </div>
     `).join("");
-
 }
 
 loadParts();
