@@ -5,28 +5,160 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#0b0b0b;color:white}
-.topbar{background:#111;padding:18px;border-bottom:5px solid #c1121f}
-button{background:#c1121f;color:white;border:none;padding:12px;border-radius:8px;font-weight:bold;margin:5px;cursor:pointer}
-button:hover{background:#8f0d17}
-.page{display:none;padding:20px}
-.active{display:block}
-input,textarea{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:none;font-size:16px;box-sizing:border-box}
-.card{background:#181818;border-left:5px solid #c1121f;padding:15px;margin:12px 0;border-radius:10px}
-.title{font-size:24px;color:#ff4d4d;font-weight:bold}
-.location{color:#ffb3b3;font-weight:bold;margin-top:10px}
-.map-area{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-top:20px}
-.room,.storage-panel{background:#f2f2f2;color:black;padding:15px;border-radius:8px}
-.rack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:25px}
-.rack,.shelf,.drawer,.cupboard,.bench{background:#dbe5f1;border:2px solid #111;padding:14px;text-align:center;border-radius:4px}
-.bench{background:#e9e6d8;margin:40px auto;width:50%}
-.wall-items{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:50px}
-.panel-title{background:#4f86c6;color:black;padding:8px;text-align:center;font-weight:bold;border:2px solid #111}
-.shelf,.drawer{padding:8px}
-.highlight{background:#00b050!important;color:black!important;font-weight:bold}
-.highlight-red{background:#c1121f!important;color:white!important;font-weight:bold}
-.hidden-empty{display:none}
-@media(max-width:800px){.map-area{grid-template-columns:1fr}.wall-items{grid-template-columns:1fr}}
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:white;
+}
+
+.topbar{
+background:#111;
+padding:18px;
+border-bottom:5px solid #c1121f;
+}
+
+button{
+background:#c1121f;
+color:white;
+border:none;
+padding:12px;
+border-radius:8px;
+font-weight:bold;
+margin:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#8f0d17;
+}
+
+.page{
+display:none;
+padding:20px;
+}
+
+.active{
+display:block;
+}
+
+input,textarea{
+width:100%;
+padding:14px;
+margin:8px 0;
+border-radius:8px;
+border:none;
+font-size:16px;
+box-sizing:border-box;
+}
+
+.card{
+background:#181818;
+border-left:5px solid #c1121f;
+padding:15px;
+margin:12px 0;
+border-radius:10px;
+}
+
+.title{
+font-size:24px;
+color:#ff4d4d;
+font-weight:bold;
+}
+
+.location{
+color:#ffb3b3;
+font-weight:bold;
+margin-top:10px;
+}
+
+.map-area{
+display:grid;
+grid-template-columns:1.3fr 1fr;
+gap:20px;
+margin-top:20px;
+}
+
+.room,.storage-panel{
+background:#f2f2f2;
+color:black;
+padding:15px;
+border-radius:8px;
+}
+
+.rack-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:3px;
+margin-bottom:25px;
+}
+
+.rack,.shelf,.drawer,.cupboard,.bench{
+background:#dbe5f1;
+border:2px solid #111;
+padding:14px;
+text-align:center;
+border-radius:4px;
+}
+
+.bench{
+background:#e9e6d8;
+margin:40px auto;
+width:50%;
+}
+
+.wall-items{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:20px;
+margin-top:50px;
+}
+
+.panel-title{
+background:#4f86c6;
+color:black;
+padding:8px;
+text-align:center;
+font-weight:bold;
+border:2px solid #111;
+}
+
+.shelf,.drawer{
+padding:8px;
+}
+
+.highlight{
+background:#00b050!important;
+color:black!important;
+font-weight:bold;
+}
+
+.highlight-red{
+background:#c1121f!important;
+color:white!important;
+font-weight:bold;
+}
+
+.error{
+color:#ff7b7b;
+font-weight:bold;
+font-size:18px;
+}
+
+.success{
+color:#7cff9b;
+font-weight:bold;
+}
+
+@media(max-width:800px){
+.map-area{
+grid-template-columns:1fr;
+}
+
+.wall-items{
+grid-template-columns:1fr;
+}
+}
 </style>
 </head>
 
@@ -34,40 +166,57 @@ input,textarea{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:non
 
 <div class="topbar">
 <h1>STT Parts Inventory</h1>
+
 <button onclick="showPage('searchPage')">Search Parts</button>
 <button onclick="showPage('addPage')">Add New Part</button>
-<button onclick="showPage('mapPage')">Map View</button>
+<button onclick="showPage('mapPage')">Shelf Map</button>
 </div>
 
 <div id="searchPage" class="page active">
+
 <h2>Search Parts</h2>
-<input id="search" placeholder="Search by part name, supplier, MPN, type, rack, shelf, drawer...">
+
+<input id="search" placeholder="Search by part name, supplier, MPN, type, rack, shelf...">
+
 <div id="results">Loading parts...</div>
+
 </div>
 
 <div id="addPage" class="page">
+
 <h2>Add New Part</h2>
+
 <input id="add_part_name" placeholder="Part Name">
 <input id="add_supplier_name" placeholder="Supplier Name">
 <input id="add_mpn" placeholder="Manufacturer Part Number">
 <input id="add_type" placeholder="Part Type">
 <textarea id="add_description" placeholder="Description"></textarea>
+
 <input id="add_rack" placeholder="Rack">
 <input id="add_shelf" placeholder="Shelf">
 <input id="add_drawer" placeholder="Drawer">
 <input id="add_area" placeholder="Area">
+
 <textarea id="add_notes" placeholder="Notes"></textarea>
+
 <button onclick="addPart()">Save Part</button>
+
 <div id="saveMessage"></div>
+
 </div>
 
 <div id="mapPage" class="page">
+
 <h2>Interactive Shelf Map</h2>
-<div id="selectedInfo">Select a part from the search page to highlight its location.</div>
+
+<div id="selectedInfo">
+Select a part from the search page to highlight its location.
+</div>
 
 <div class="map-area">
 
 <div class="room">
+
 <h3>Workshop Area</h3>
 
 <div class="rack-grid">
@@ -87,11 +236,15 @@ input,textarea{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:non
 <div class="rack" data-rack="19">Rack 19</div>
 <div class="drawer" data-drawer="right drawer">Right Drawer</div>
 </div>
+
 </div>
 
 <div>
+
 <div class="storage-panel">
+
 <div class="panel-title">Left Drawer</div>
+
 <div class="drawer" data-drawer="left drawer" data-shelf="1">Drawer 1</div>
 <div class="drawer" data-drawer="left drawer" data-shelf="2">Drawer 2</div>
 <div class="drawer" data-drawer="left drawer" data-shelf="3">Drawer 3</div>
@@ -99,12 +252,15 @@ input,textarea{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:non
 <div class="drawer" data-drawer="left drawer" data-shelf="5">Drawer 5</div>
 <div class="drawer" data-drawer="left drawer" data-shelf="6">Drawer 6</div>
 <div class="drawer" data-drawer="left drawer" data-shelf="7">Drawer 7</div>
+
 </div>
 
 <br>
 
 <div class="storage-panel">
+
 <div class="panel-title">Right Drawer</div>
+
 <div class="drawer" data-drawer="right drawer" data-shelf="1">Drawer 1</div>
 <div class="drawer" data-drawer="right drawer" data-shelf="2">Drawer 2</div>
 <div class="drawer" data-drawer="right drawer" data-shelf="3">Drawer 3</div>
@@ -112,30 +268,41 @@ input,textarea{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:non
 <div class="drawer" data-drawer="right drawer" data-shelf="5">Drawer 5</div>
 <div class="drawer" data-drawer="right drawer" data-shelf="6">Drawer 6</div>
 <div class="drawer" data-drawer="right drawer" data-shelf="7">Drawer 7</div>
+
 </div>
 
 <br>
 
 <div class="storage-panel">
+
 <div class="panel-title">Rack Shelves</div>
+
 <div class="shelf" data-shelf="1">Shelf 1</div>
 <div class="shelf" data-shelf="2">Shelf 2</div>
 <div class="shelf" data-shelf="3">Shelf 3</div>
 <div class="shelf" data-shelf="4">Shelf 4</div>
 <div class="shelf" data-shelf="5">Shelf 5</div>
 <div class="shelf" data-shelf="6">Shelf 6</div>
-</div>
+
 </div>
 
 </div>
+
+</div>
+
 </div>
 
 <script>
+
 const SUPABASE_URL = "https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/";
 const SUPABASE_KEY = "sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
-let allParts = [];
 
-function safe(v){return v === null || v === undefined || v === "" ? "" : v}
+let allParts = [];
+let displayedParts = [];
+
+function safe(v){
+return v === null || v === undefined || v === "" ? "" : v;
+}
 
 function showPage(id){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -143,43 +310,97 @@ document.getElementById(id).classList.add("active");
 }
 
 async function loadParts(){
-const response = await fetch(SUPABASE_URL + "parts_public", {
-headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + SUPABASE_KEY}
+
+const response = await fetch(SUPABASE_URL + "parts_public",{
+headers:{
+apikey:SUPABASE_KEY,
+Authorization:"Bearer " + SUPABASE_KEY
+}
 });
+
 const data = await response.json();
-allParts = data;
-showParts(allParts);
+
+if(data.code || data.message){
+
+document.getElementById("results").innerHTML =
+`<div class="error">ERROR: ${JSON.stringify(data)}</div>`;
+
+return;
+}
+
+allParts = data || [];
+displayedParts = allParts;
+
+showParts(displayedParts);
 }
 
 function showParts(parts){
+
+displayedParts = parts;
+
+if(parts.length === 0){
+
+document.getElementById("results").innerHTML =
+`<div class="error">No parts found.</div>`;
+
+return;
+}
+
 document.getElementById("results").innerHTML = parts.map((p,i)=>`
+
 <div class="card">
+
 <div class="title">${safe(p.part_name)}</div>
+
 <div><b>Supplier:</b> ${safe(p.supplier_name)}</div>
-<div><b>MPN:</b> ${safe(p.manufacturer_part_number)}</div>
-<div><b>Type:</b> ${safe(p.part_type)}</div>
+
+<div><b>Manufacturer Part Number:</b> ${safe(p.manufacturer_part_number)}</div>
+
+<div><b>Part Type:</b> ${safe(p.part_type)}</div>
+
 ${safe(p.description) ? `<div><b>Description:</b> ${safe(p.description)}</div>` : ""}
+
 <div class="location">
+
 ${safe(p.rack) ? `Rack: ${safe(p.rack)} ` : ""}
+
 ${safe(p.shelf) ? `| Shelf: ${safe(p.shelf)} ` : ""}
+
 ${safe(p.drawer) ? `| Drawer: ${safe(p.drawer)} ` : ""}
+
 ${safe(p.area) ? `| Area: ${safe(p.area)} ` : ""}
+
 </div>
+
 ${safe(p.notes) ? `<div><b>Notes:</b> ${safe(p.notes)}</div>` : ""}
-<button onclick="showLocation(${i})">View Location on Map</button>
+
+<button onclick="showLocation(${i})">
+View Location on Map
+</button>
+
 </div>
+
 `).join("");
 }
 
 document.getElementById("search").addEventListener("input",function(){
+
 let v=this.value.toLowerCase();
-let filtered=allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(v));
+
+let filtered=allParts.filter(p=>
+JSON.stringify(p).toLowerCase().includes(v)
+);
+
 showParts(filtered);
+
 });
 
 function showLocation(index){
-let p=allParts[index];
+
+let p = displayedParts[index];
+
 showPage("mapPage");
+
 document.querySelectorAll(".highlight,.highlight-red").forEach(e=>{
 e.classList.remove("highlight");
 e.classList.remove("highlight-red");
@@ -191,55 +412,102 @@ let drawer=safe(p.drawer).toLowerCase().trim();
 let area=safe(p.area).toLowerCase().trim();
 
 document.getElementById("selectedInfo").innerHTML =
-`<div class="card"><div class="title">${safe(p.part_name)}</div>
+
+`<div class="card">
+
+<div class="title">${safe(p.part_name)}</div>
+
 ${rack ? "Rack: " + safe(p.rack) + "<br>" : ""}
+
 ${shelf ? "Shelf: " + safe(p.shelf) + "<br>" : ""}
+
 ${drawer ? "Drawer: " + safe(p.drawer) + "<br>" : ""}
+
 ${area ? "Area: " + safe(p.area) : ""}
+
 </div>`;
 
 document.querySelectorAll("[data-rack]").forEach(el=>{
-if(el.dataset.rack.toLowerCase()===rack) el.classList.add("highlight-red");
+if(el.dataset.rack.toLowerCase()===rack)
+el.classList.add("highlight-red");
 });
 
 document.querySelectorAll("[data-shelf]").forEach(el=>{
-if(el.dataset.shelf.toLowerCase()===shelf) el.classList.add("highlight");
+if(el.dataset.shelf.toLowerCase()===shelf)
+el.classList.add("highlight");
 });
 
 document.querySelectorAll("[data-drawer]").forEach(el=>{
-if(drawer && el.dataset.drawer.toLowerCase().includes(drawer)) el.classList.add("highlight-red");
+if(drawer && el.dataset.drawer.toLowerCase().includes(drawer))
+el.classList.add("highlight-red");
 });
 
 document.querySelectorAll("[data-area]").forEach(el=>{
-if(area && el.dataset.area.toLowerCase().includes(area)) el.classList.add("highlight-red");
+if(area && el.dataset.area.toLowerCase().includes(area))
+el.classList.add("highlight-red");
 });
 }
 
 async function addPart(){
-let newPart={
+
+const newPart = {
+
 "Part Name":document.getElementById("add_part_name").value,
+
 "Supplier Name":document.getElementById("add_supplier_name").value,
+
 "Manufacturer Part Number":document.getElementById("add_mpn").value,
+
 "Part Type":document.getElementById("add_type").value,
+
 "Description":document.getElementById("add_description").value,
+
 "Rack":document.getElementById("add_rack").value,
+
 "Shelf":document.getElementById("add_shelf").value,
+
 "Drawer":document.getElementById("add_drawer").value,
+
 "Area":document.getElementById("add_area").value,
+
 "Notes":document.getElementById("add_notes").value
+
 };
 
 const response=await fetch(SUPABASE_URL+"Parts",{
+
 method:"POST",
-headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},
+
+headers:{
+apikey:SUPABASE_KEY,
+Authorization:"Bearer "+SUPABASE_KEY,
+"Content-Type":"application/json",
+Prefer:"return=minimal"
+},
+
 body:JSON.stringify(newPart)
+
 });
 
-document.getElementById("saveMessage").innerHTML=response.ok ? "Part added successfully." : await response.text();
+if(response.ok){
+
+document.getElementById("saveMessage").innerHTML =
+`<div class="success">Part added successfully.</div>`;
+
+document.querySelectorAll("#addPage input,#addPage textarea")
+.forEach(i=>i.value="");
+
 loadParts();
+
+}else{
+
+document.getElementById("saveMessage").innerHTML =
+`<div class="error">${await response.text()}</div>`;
+}
 }
 
 loadParts();
+
 </script>
 
 </body>
