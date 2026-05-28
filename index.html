@@ -8,9 +8,12 @@
 <style>
 body{margin:0;font-family:Arial;background:#0a0a0a;color:white;overflow-x:hidden}
 header{background:#111;border-bottom:4px solid #cc0000;padding:12px;position:sticky;top:0;z-index:1000}
+.top-row{display:flex;align-items:center;gap:10px}
 h1{margin:0;color:#ff2b2b;font-size:26px}
-nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
-nav button{background:#cc0000;border:none;color:white;padding:10px;border-radius:10px;font-weight:bold;cursor:pointer}
+.menu-btn{background:#cc0000;color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
+.side-menu{display:none;position:fixed;top:66px;left:0;width:280px;background:#111;border-right:4px solid #cc0000;border-bottom:4px solid #cc0000;padding:10px;z-index:2000}
+.side-menu.open{display:flex;flex-direction:column}
+.side-menu button{width:100%;text-align:left;background:#cc0000;border:none;color:white;padding:11px;margin:4px 0;border-radius:8px;font-weight:bold;cursor:pointer}
 .page{display:none;padding:12px}.active{display:block}
 input,select,textarea{width:100%;padding:14px;font-size:16px;border:none;border-radius:10px;margin-bottom:12px;box-sizing:border-box}
 textarea{min-height:80px}
@@ -38,12 +41,12 @@ td input{margin:0;padding:8px}
 .shelf-box{background:#dce6f2;border:2px solid black;color:black}
 .shelf-title{background:#2d65b3;color:white;text-align:center;padding:8px;font-weight:bold}
 .shelf,.drawer-row{border-top:1px solid black;padding:8px;text-align:center}
+
 @media(max-width:700px){
 html,body{overflow-x:hidden;overflow-y:auto}
 h1{font-size:18px}
 header{padding:8px}
-nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-nav button{font-size:11px;padding:8px 4px;margin:0}
+.side-menu{top:52px;width:85%;max-width:300px}
 .page{padding:8px}
 .filter-grid{grid-template-columns:1fr}
 table{font-size:12px}
@@ -61,17 +64,21 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <body>
 
 <header>
+<div class="top-row">
+<button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
 <h1>Electrical Parts</h1>
-<nav>
-<button onclick="showPage('searchPage')">Search</button>
-<button onclick="showPage('addPage')">Add Part</button>
-<button onclick="showPage('editPage')">Edit Parts</button>
-<button onclick="showPage('stockPage')">Stock Warnings</button>
-<button onclick="showPage('warningSettingsPage')">Warning Settings</button>
-<button onclick="showPage('movementPage')">Stock In / Out</button>
-<button onclick="showPage('bulkPage')">Bulk Job Issue</button>
-<button onclick="showPage('historyPage')">Usage History</button>
-<button onclick="showPage('mapPage')">Map</button>
+</div>
+
+<nav id="sideMenu" class="side-menu">
+<button onclick="showPage('searchPage');toggleMenu()">Search</button>
+<button onclick="showPage('addPage');toggleMenu()">Add Part</button>
+<button onclick="showPage('editPage');toggleMenu()">Edit Parts</button>
+<button onclick="showPage('stockPage');toggleMenu()">Stock Warnings</button>
+<button onclick="showPage('warningSettingsPage');toggleMenu()">Warning Settings</button>
+<button onclick="showPage('movementPage');toggleMenu()">Stock In / Out</button>
+<button onclick="showPage('bulkPage');toggleMenu()">Bulk Job Issue</button>
+<button onclick="showPage('historyPage');toggleMenu()">Usage History</button>
+<button onclick="showPage('mapPage');toggleMenu()">Map</button>
 </nav>
 </header>
 
@@ -114,7 +121,6 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="movementPage" class="page">
 <h2>Stock In / Out</h2>
-
 <h3>Selected Stock Movement</h3>
 <div id="selectedMovePart" class="card">No part selected.</div>
 
@@ -257,6 +263,10 @@ let bulkItems=[];
 let selectedMovementPart=null;
 let warningRules=[];
 
+function toggleMenu(){
+document.getElementById("sideMenu").classList.toggle("open");
+}
+
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 document.getElementById(page).classList.add("active");
@@ -292,10 +302,8 @@ warningRules=await r.json();
 function qty(p){return Number(p.quantity||0)}
 
 function getWarningLevel(partType){
-const rule=warningRules.find(r=>
-String(r.part_type||"").toLowerCase()===String(partType||"").toLowerCase()
-);
-return rule ? Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT) : DEFAULT_LOW_STOCK_LIMIT;
+const rule=warningRules.find(r=>String(r.part_type||"").toLowerCase()===String(partType||"").toLowerCase());
+return rule?Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT):DEFAULT_LOW_STOCK_LIMIT;
 }
 
 function cardClass(p){
@@ -335,13 +343,8 @@ document.getElementById("results").innerHTML=parts.map(renderPartCard).join("");
 }
 
 function showStockWarnings(){
-const low=[...allParts]
-.filter(p=>qty(p)<=getWarningLevel(p.part_type))
-.sort((a,b)=>qty(a)-qty(b));
-
-document.getElementById("stockResults").innerHTML=low.length
-? low.map(renderPartCard).join("")
-: `<div class="card"><h2>No low stock items</h2></div>`;
+const low=[...allParts].filter(p=>qty(p)<=getWarningLevel(p.part_type)).sort((a,b)=>qty(a)-qty(b));
+document.getElementById("stockResults").innerHTML=low.length?low.map(renderPartCard).join(""):`<div class="card"><h2>No low stock items</h2></div>`;
 }
 
 function showWarningSettings(){
@@ -350,11 +353,7 @@ const partTypes=[...new Set(allParts.map(p=>p.part_type||"Unknown").filter(Boole
 document.getElementById("warningSettingsResults").innerHTML=`
 <table>
 <thead>
-<tr>
-<th>Part Type</th>
-<th>Warning Level</th>
-<th>Save</th>
-</tr>
+<tr><th>Part Type</th><th>Warning Level</th><th>Save</th></tr>
 </thead>
 <tbody>
 ${partTypes.map((type,i)=>`
@@ -371,10 +370,7 @@ ${partTypes.map((type,i)=>`
 async function saveWarningRule(encodedType,inputId){
 const type=decodeURIComponent(encodedType);
 const level=Number(document.getElementById(inputId).value||DEFAULT_LOW_STOCK_LIMIT);
-
-const existing=warningRules.find(r=>
-String(r.part_type||"").toLowerCase()===String(type||"").toLowerCase()
-);
+const existing=warningRules.find(r=>String(r.part_type||"").toLowerCase()===String(type||"").toLowerCase());
 
 let response;
 
@@ -392,10 +388,7 @@ body:JSON.stringify({part_type:type,warning_level:level})
 });
 }
 
-if(!response.ok){
-alert(await response.text());
-return;
-}
+if(!response.ok){alert(await response.text());return}
 
 alert("Warning level saved");
 await loadWarningRules();
@@ -425,7 +418,7 @@ if(index!==-1)allParts[index].quantity=Number(newQty);
 
 await logMovement(part,type,Math.abs(oldQty-newQty),job,notes);
 
-if(selectedMovementPart && ((selectedMovementPart.id&&selectedMovementPart.id===part.id)||selectedMovementPart.manufacturer_part_number===part.manufacturer_part_number)){
+if(selectedMovementPart&&((selectedMovementPart.id&&selectedMovementPart.id===part.id)||selectedMovementPart.manufacturer_part_number===part.manufacturer_part_number)){
 selectedMovementPart.quantity=Number(newQty);
 selectMovementPart(encodeURIComponent(JSON.stringify(selectedMovementPart)));
 }
@@ -464,7 +457,12 @@ const newPart={
 "Drawer":document.getElementById("newDrawer").value,
 "Quantity":Number(document.getElementById("newQuantity").value||0)
 };
-const r=await fetch(TABLE_API,{method:"POST",headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},body:JSON.stringify(newPart)});
+
+const r=await fetch(TABLE_API,{
+method:"POST",
+headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
+body:JSON.stringify(newPart)
+});
 if(!r.ok){alert(await r.text());return}
 alert("Part Added");
 loadParts();
@@ -524,7 +522,7 @@ const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
 
 box.innerHTML=matches.length?matches.map(p=>{
 const encoded=encodeURIComponent(JSON.stringify(p));
-const selected=selectedMovementPart && ((selectedMovementPart.id&&selectedMovementPart.id===p.id)||selectedMovementPart.manufacturer_part_number===p.manufacturer_part_number);
+const selected=selectedMovementPart&&((selectedMovementPart.id&&selectedMovementPart.id===p.id)||selectedMovementPart.manufacturer_part_number===p.manufacturer_part_number);
 return `
 <div class="${selected?'card selected-stock':'card'}">
 <h2>${p.part_name||""}</h2>
@@ -539,20 +537,15 @@ return `
 
 function selectMovementPart(encoded){
 selectedMovementPart=JSON.parse(decodeURIComponent(encoded));
-
 document.getElementById("selectedMovePart").className="card selected-stock";
-
 document.getElementById("selectedMovePart").innerHTML=`
 <h2>${selectedMovementPart.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
 <p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
 <p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
-<p class="location">${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}${selectedMovementPart.shelf?" | Shelf "+selectedMovementPart.shelf:""}${selectedMovementPart.drawer?" | Drawer "+selectedMovementPart.drawer:""}</p>
-`;
-
+<p class="location">${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}${selectedMovementPart.shelf?" | Shelf "+selectedMovementPart.shelf:""}${selectedMovementPart.drawer?" | Drawer "+selectedMovementPart.drawer:""}</p>`;
 document.getElementById("moveQty").focus();
-
 showMovementSearchResults();
 }
 
@@ -563,13 +556,9 @@ const amount=Number(document.getElementById("moveQty").value||0);
 const job=document.getElementById("moveJob").value;
 const notes=document.getElementById("moveNotes").value;
 
-if(!p||!amount){
-alert("Select a part and quantity");
-return;
-}
+if(!p||!amount){alert("Select a part and quantity");return}
 
 const newQty=type==="IN"?qty(p)+amount:qty(p)-amount;
-
 await changeQuantity(p,newQty,type,job,notes);
 
 document.getElementById("moveQty").value="";
@@ -609,10 +598,7 @@ function addToBulkJob(encoded){
 const part=JSON.parse(decodeURIComponent(encoded));
 const exists=bulkItems.find(i=>(i.part.id&&i.part.id===part.id)||i.part.manufacturer_part_number===part.manufacturer_part_number);
 
-if(exists){
-alert("This part is already in the job table.");
-return;
-}
+if(exists){alert("This part is already in the job table.");return}
 
 bulkItems.push({part:part,amount:1});
 renderBulkTable();
@@ -630,13 +616,7 @@ return;
 box.innerHTML=`
 <table>
 <thead>
-<tr>
-<th>Part</th>
-<th>Part Code</th>
-<th>Stock</th>
-<th>Qty Used</th>
-<th>Remove</th>
-</tr>
+<tr><th>Part</th><th>Part Code</th><th>Stock</th><th>Qty Used</th><th>Remove</th></tr>
 </thead>
 <tbody>
 ${bulkItems.map((item,i)=>`
@@ -686,9 +666,9 @@ showHistory();
 
 function getPartForMovement(m){
 return allParts.find(p=>
-(p.id&&m.part_id&&p.id===m.part_id) ||
+(p.id&&m.part_id&&p.id===m.part_id)||
 (p.manufacturer_part_number&&m.manufacturer_part_number&&p.manufacturer_part_number===m.manufacturer_part_number)
-) || {};
+)||{};
 }
 
 function populateHistoryFilters(){
@@ -710,14 +690,13 @@ const jobFilter=document.getElementById("historyJobFilter")?.value||"";
 
 return movements.filter(m=>{
 const p=getPartForMovement(m);
-
 const combined={...m,supplier_name:p.supplier_name||"",part_type:p.part_type||"",rack:p.rack||"",shelf:p.shelf||"",drawer:p.drawer||""};
 
-if(search && !JSON.stringify(combined).toLowerCase().includes(search))return false;
-if(typeFilter && m.movement_type!==typeFilter)return false;
-if(supplierFilter && p.supplier_name!==supplierFilter)return false;
-if(partTypeFilter && p.part_type!==partTypeFilter)return false;
-if(jobFilter && m.job_number!==jobFilter)return false;
+if(search&&!JSON.stringify(combined).toLowerCase().includes(search))return false;
+if(typeFilter&&m.movement_type!==typeFilter)return false;
+if(supplierFilter&&p.supplier_name!==supplierFilter)return false;
+if(partTypeFilter&&p.part_type!==partTypeFilter)return false;
+if(jobFilter&&m.job_number!==jobFilter)return false;
 
 return true;
 });
@@ -760,7 +739,6 @@ let csv="Date,Part Name,Part Code,Supplier,Part Type,Movement,Quantity,Job Numbe
 
 filtered.forEach(m=>{
 const p=getPartForMovement(m);
-
 csv += [
 m.created_at||"",
 m.part_name||"",
@@ -774,12 +752,11 @@ m.notes||"",
 p.rack||"",
 p.shelf||"",
 p.drawer||""
-].map(value => `"${String(value).replace(/"/g,'""')}"`).join(",") + "\n";
+].map(value=>`"${String(value).replace(/"/g,'""')}"`).join(",")+"\n";
 });
 
 const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
 const link=document.createElement("a");
-
 link.href=URL.createObjectURL(blob);
 link.download="stock_movement_history.csv";
 link.click();
