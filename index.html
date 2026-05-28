@@ -22,6 +22,10 @@ textarea{min-height:80px}
 button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radius:8px;font-weight:bold;margin:5px 4px 0 0;cursor:pointer}
 .qty-btn{font-size:20px;width:42px}
 .small{font-size:13px;color:#ccc}
+table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
+th,td{border:1px solid #333;padding:8px;text-align:left}
+th{background:#cc0000;color:white}
+td input{margin:0;padding:8px}
 .map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
 .map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
 .workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
@@ -40,6 +44,8 @@ header{padding:8px}
 nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 nav button{font-size:11px;padding:8px 4px;margin:0}
 .page{padding:8px}
+table{font-size:12px}
+th,td{padding:5px}
 body.map-mode{overflow:hidden;height:100vh}
 body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 #mapPage h2{display:none}
@@ -111,11 +117,19 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="bulkPage" class="page">
 <h2>Bulk Job Issue</h2>
-<p class="small">Use this when taking multiple parts out for one job.</p>
+<p class="small">Search for parts, add them to the job table, then enter the quantity used.</p>
+
 <input id="bulkJob" placeholder="Job Number">
 <textarea id="bulkNotes" placeholder="Job notes"></textarea>
-<div id="bulkList"></div>
+
+<input id="bulkSearch" placeholder="Search part to add to job..." oninput="showBulkSearchResults()">
+<div id="bulkSearchResults"></div>
+
+<h3>Parts Added To This Job</h3>
+<div id="bulkJobTable"></div>
+
 <button onclick="submitBulkIssue()">Submit Bulk Issue</button>
+<button onclick="clearBulkJob()">Clear Job List</button>
 </div>
 
 <div id="historyPage" class="page">
@@ -191,6 +205,7 @@ const LOW_STOCK_LIMIT=2;
 
 let allParts=[];
 let movements=[];
+let bulkItems=[];
 
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -199,8 +214,8 @@ document.body.classList.toggle("map-mode",page==="mapPage");
 if(page==="editPage")showEditParts();
 if(page==="stockPage")showStockWarnings();
 if(page==="movementPage")populateMovementParts();
-if(page==="bulkPage")showBulkList();
-if(page==="historyPage"){loadMovements();}
+if(page==="bulkPage"){showBulkSearchResults();renderBulkTable();}
+if(page==="historyPage")loadMovements();
 }
 
 async function loadParts(){
@@ -209,7 +224,7 @@ allParts=await r.json();
 showParts(allParts);
 showStockWarnings();
 populateMovementParts();
-showBulkList();
+renderBulkTable();
 }
 
 function qty(p){return Number(p.quantity||0)}
@@ -266,7 +281,7 @@ await logMovement(part,type,Math.abs(qty(part)-newQty),job,notes);
 const search=document.getElementById("search").value.toLowerCase();
 showParts(search?allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(search)):allParts);
 showStockWarnings();
-showBulkList();
+renderBulkTable();
 }
 
 async function logMovement(part,type,amount,job,notes){
@@ -361,29 +376,119 @@ await changeQuantity(p,newQty,type,job,notes);
 alert("Movement saved");
 }
 
-function showBulkList(){
-const box=document.getElementById("bulkList");
+function showBulkSearchResults(){
+const box=document.getElementById("bulkSearchResults");
 if(!box)return;
-box.innerHTML=allParts.map((p,i)=>`
+const s=(document.getElementById("bulkSearch")?.value||"").toLowerCase();
+
+if(!s){
+box.innerHTML=`<div class="card"><p>Start typing to search parts.</p></div>`;
+return;
+}
+
+const matches=allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s)).slice(0,20);
+
+box.innerHTML=matches.length?matches.map(p=>{
+const encoded=encodeURIComponent(JSON.stringify(p));
+return `
 <div class="card">
-<b>${p.part_name||""}</b><br>
-<span class="small">${p.manufacturer_part_number||""} | Current Qty: ${qty(p)}</span>
-<input id="bulk-${i}" type="number" placeholder="Qty used for job">
-</div>`).join("");
+<h2>${p.part_name||""}</h2>
+<p><b>MPN:</b> ${p.manufacturer_part_number||""}</p>
+<p><b>Current Qty:</b> ${qty(p)}</p>
+<p class="location">${p.rack?"Rack "+p.rack:""}${p.shelf?" | Shelf "+p.shelf:""}${p.drawer?" | Drawer "+p.drawer:""}</p>
+<button onclick="addToBulkJob('${encoded}')">Add to Job</button>
+</div>`;
+}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
+}
+
+function addToBulkJob(encoded){
+const part=JSON.parse(decodeURIComponent(encoded));
+const exists=bulkItems.find(i=>(i.part.id&&i.part.id===part.id)||i.part.manufacturer_part_number===part.manufacturer_part_number);
+
+if(exists){
+alert("This part is already in the job table.");
+return;
+}
+
+bulkItems.push({part:part,amount:1});
+renderBulkTable();
+}
+
+function renderBulkTable(){
+const box=document.getElementById("bulkJobTable");
+if(!box)return;
+
+if(bulkItems.length===0){
+box.innerHTML=`<div class="card"><p>No parts added to this job yet.</p></div>`;
+return;
+}
+
+box.innerHTML=`
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>MPN</th>
+<th>Stock</th>
+<th>Qty Used</th>
+<th>Remove</th>
+</tr>
+</thead>
+<tbody>
+${bulkItems.map((item,i)=>`
+<tr>
+<td>${item.part.part_name||""}</td>
+<td>${item.part.manufacturer_part_number||""}</td>
+<td>${qty(item.part)}</td>
+<td><input type="number" min="1" value="${item.amount}" onchange="updateBulkAmount(${i},this.value)"></td>
+<td><button onclick="removeBulkItem(${i})">Remove</button></td>
+</tr>
+`).join("")}
+</tbody>
+</table>`;
+}
+
+function updateBulkAmount(index,value){
+bulkItems[index].amount=Number(value||0);
+}
+
+function removeBulkItem(index){
+bulkItems.splice(index,1);
+renderBulkTable();
+}
+
+function clearBulkJob(){
+bulkItems=[];
+document.getElementById("bulkSearch").value="";
+renderBulkTable();
+showBulkSearchResults();
 }
 
 async function submitBulkIssue(){
 const job=document.getElementById("bulkJob").value;
 const notes=document.getElementById("bulkNotes").value;
-if(!job){alert("Enter a job number");return}
 
-for(let i=0;i<allParts.length;i++){
-const amount=Number(document.getElementById("bulk-"+i)?.value||0);
+if(!job){
+alert("Enter a job number");
+return;
+}
+
+if(bulkItems.length===0){
+alert("Add at least one part to the job table.");
+return;
+}
+
+for(const item of bulkItems){
+const amount=Number(item.amount||0);
 if(amount>0){
-await changeQuantity(allParts[i],qty(allParts[i])-amount,"JOB OUT",job,notes);
+await changeQuantity(item.part,qty(item.part)-amount,"JOB OUT",job,notes);
 }
 }
+
 alert("Bulk job issue saved");
+bulkItems=[];
+document.getElementById("bulkSearch").value="";
+renderBulkTable();
 showPage("historyPage");
 }
 
