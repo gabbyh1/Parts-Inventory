@@ -22,6 +22,7 @@ textarea{min-height:80px}
 button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radius:8px;font-weight:bold;margin:5px 4px 0 0;cursor:pointer}
 .qty-btn{font-size:20px;width:42px}
 .small{font-size:13px;color:#ccc}
+.selected-stock{background:#123d1f!important;border-left:6px solid #00ff55!important;box-shadow:0 0 12px #00ff55}
 table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
 th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
@@ -106,22 +107,24 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="movementPage" class="page">
 <h2>Stock In / Out</h2>
-<p class="small">Search for a part, select it, then submit stock in or out.</p>
 
-<input id="moveSearch" placeholder="Search part name, supplier, part code, type, rack, shelf or drawer..." oninput="showMovementSearchResults()">
-<div id="moveSearchResults"></div>
-
-<h3>Selected Part</h3>
+<h3>Selected Stock Movement</h3>
 <div id="selectedMovePart" class="card">No part selected.</div>
 
 <select id="moveType">
 <option value="IN">Stock In</option>
 <option value="OUT">Stock Out</option>
 </select>
+
 <input id="moveQty" type="number" placeholder="Quantity">
 <input id="moveJob" placeholder="Job Number / Reference">
 <textarea id="moveNotes" placeholder="Notes"></textarea>
 <button onclick="submitMovement()">Submit Movement</button>
+
+<hr>
+
+<input id="moveSearch" placeholder="Search part name, supplier, part code, type, rack, shelf or drawer..." oninput="showMovementSearchResults()">
+<div id="moveSearchResults"></div>
 </div>
 
 <div id="bulkPage" class="page">
@@ -250,7 +253,12 @@ document.getElementById(page).classList.add("active");
 document.body.classList.toggle("map-mode",page==="mapPage");
 if(page==="editPage")showEditParts();
 if(page==="stockPage")showStockWarnings();
-if(page==="movementPage"){selectedMovementPart=null;document.getElementById("selectedMovePart").innerHTML="No part selected.";showMovementSearchResults();}
+if(page==="movementPage"){
+selectedMovementPart=null;
+document.getElementById("selectedMovePart").className="card";
+document.getElementById("selectedMovePart").innerHTML="No part selected.";
+showMovementSearchResults();
+}
 if(page==="bulkPage"){showBulkSearchResults();renderBulkTable();}
 if(page==="historyPage")loadMovements();
 }
@@ -266,13 +274,11 @@ renderBulkTable();
 function qty(p){return Number(p.quantity||0)}
 function cardClass(p){if(qty(p)<=0)return"card critical";if(qty(p)<=LOW_STOCK_LIMIT)return"card low";return"card"}
 
+function partMatches(p,s){return JSON.stringify(p).toLowerCase().includes(s)}
+
 function searchParts(){
 const s=document.getElementById("search").value.toLowerCase();
 showParts(allParts.filter(p=>partMatches(p,s)));
-}
-
-function partMatches(p,s){
-return JSON.stringify(p).toLowerCase().includes(s);
 }
 
 function renderPartCard(part){
@@ -304,6 +310,7 @@ changeQuantity(JSON.parse(decodeURIComponent(encoded)),newQty,type,job);
 
 async function changeQuantity(part,newQty,type="UPDATE",job="",notes=""){
 if(newQty<0)newQty=0;
+
 let url=part.id?TABLE_API+"?id=eq."+part.id:TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
 
 const r=await fetch(url,{
@@ -318,6 +325,11 @@ const index=allParts.findIndex(p=>(p.id&&p.id===part.id)||(!p.id&&p.manufacturer
 if(index!==-1)allParts[index].quantity=Number(newQty);
 
 await logMovement(part,type,Math.abs(oldQty-newQty),job,notes);
+
+if(selectedMovementPart && ((selectedMovementPart.id&&selectedMovementPart.id===part.id)||selectedMovementPart.manufacturer_part_number===part.manufacturer_part_number)){
+selectedMovementPart.quantity=Number(newQty);
+selectMovementPart(encodeURIComponent(JSON.stringify(selectedMovementPart)));
+}
 
 const search=document.getElementById("search").value.toLowerCase();
 showParts(search?allParts.filter(p=>partMatches(p,search)):allParts);
@@ -402,6 +414,7 @@ showEditParts();
 function showMovementSearchResults(){
 const box=document.getElementById("moveSearchResults");
 if(!box)return;
+
 const s=(document.getElementById("moveSearch")?.value||"").toLowerCase();
 
 if(!s){
@@ -411,28 +424,38 @@ return;
 
 const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
 
-box.innerHTML=matches.length?matches.map((p,i)=>{
+box.innerHTML=matches.length?matches.map(p=>{
 const encoded=encodeURIComponent(JSON.stringify(p));
+const selected=selectedMovementPart && ((selectedMovementPart.id&&selectedMovementPart.id===p.id)||selectedMovementPart.manufacturer_part_number===p.manufacturer_part_number);
 return `
-<div class="card">
+<div class="${selected?'card selected-stock':'card'}">
 <h2>${p.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
 <p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${p.part_type||""}</p>
 <p><b>Current Qty:</b> ${qty(p)}</p>
-<button onclick="selectMovementPart('${encoded}')">Select This Part</button>
+<button onclick="selectMovementPart('${encoded}')">${selected?'Selected':'Select This Part'}</button>
 </div>`;
 }).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
 }
 
 function selectMovementPart(encoded){
 selectedMovementPart=JSON.parse(decodeURIComponent(encoded));
+
+document.getElementById("selectedMovePart").className="card selected-stock";
+
 document.getElementById("selectedMovePart").innerHTML=`
 <h2>${selectedMovementPart.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
 <p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
-<p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>`;
+<p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
+<p class="location">${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}${selectedMovementPart.shelf?" | Shelf "+selectedMovementPart.shelf:""}${selectedMovementPart.drawer?" | Drawer "+selectedMovementPart.drawer:""}</p>
+`;
+
+document.getElementById("moveQty").focus();
+
+showMovementSearchResults();
 }
 
 async function submitMovement(){
@@ -441,9 +464,20 @@ const type=document.getElementById("moveType").value;
 const amount=Number(document.getElementById("moveQty").value||0);
 const job=document.getElementById("moveJob").value;
 const notes=document.getElementById("moveNotes").value;
-if(!p||!amount){alert("Select a part and quantity");return}
+
+if(!p||!amount){
+alert("Select a part and quantity");
+return;
+}
+
 const newQty=type==="IN"?qty(p)+amount:qty(p)-amount;
+
 await changeQuantity(p,newQty,type,job,notes);
+
+document.getElementById("moveQty").value="";
+document.getElementById("moveJob").value="";
+document.getElementById("moveNotes").value="";
+
 alert("Movement saved");
 }
 
@@ -598,14 +632,7 @@ const jobFilter=document.getElementById("historyJobFilter")?.value||"";
 const list=movements.filter(m=>{
 const p=getPartForMovement(m);
 
-const combined={
-...m,
-supplier_name:p.supplier_name||"",
-part_type:p.part_type||"",
-rack:p.rack||"",
-shelf:p.shelf||"",
-drawer:p.drawer||""
-};
+const combined={...m,supplier_name:p.supplier_name||"",part_type:p.part_type||"",rack:p.rack||"",shelf:p.shelf||"",drawer:p.drawer||""};
 
 if(search && !JSON.stringify(combined).toLowerCase().includes(search))return false;
 if(typeFilter && m.movement_type!==typeFilter)return false;
