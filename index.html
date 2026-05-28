@@ -67,6 +67,7 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <button onclick="showPage('addPage')">Add Part</button>
 <button onclick="showPage('editPage')">Edit Parts</button>
 <button onclick="showPage('stockPage')">Stock Warnings</button>
+<button onclick="showPage('warningSettingsPage')">Warning Settings</button>
 <button onclick="showPage('movementPage')">Stock In / Out</button>
 <button onclick="showPage('bulkPage')">Bulk Job Issue</button>
 <button onclick="showPage('historyPage')">Usage History</button>
@@ -100,8 +101,15 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="stockPage" class="page">
 <h2>Stock Warnings</h2>
-<p>Low stock is quantity 2 or below.</p>
+<p>Items are shown based on their part type warning level.</p>
+<button onclick="showPage('warningSettingsPage')">Edit Stock Warning Levels</button>
 <div id="stockResults"></div>
+</div>
+
+<div id="warningSettingsPage" class="page">
+<h2>Stock Warning Settings</h2>
+<p class="small">Set the warning quantity for each part type. Example: Terminals = 20, Sensors = 2.</p>
+<div id="warningSettingsResults"></div>
 </div>
 
 <div id="movementPage" class="page">
@@ -239,20 +247,24 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 const API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/parts_public";
 const TABLE_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/Parts";
 const MOVEMENT_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_movements";
+const WARNING_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_warning_rules";
 const API_KEY="sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
-const LOW_STOCK_LIMIT=2;
+const DEFAULT_LOW_STOCK_LIMIT=2;
 
 let allParts=[];
 let movements=[];
 let bulkItems=[];
 let selectedMovementPart=null;
+let warningRules=[];
 
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 document.getElementById(page).classList.add("active");
 document.body.classList.toggle("map-mode",page==="mapPage");
+
 if(page==="editPage")showEditParts();
 if(page==="stockPage")showStockWarnings();
+if(page==="warningSettingsPage")showWarningSettings();
 if(page==="movementPage"){
 selectedMovementPart=null;
 document.getElementById("selectedMovePart").className="card";
@@ -266,13 +278,33 @@ if(page==="historyPage")loadMovements();
 async function loadParts(){
 const r=await fetch(API,{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
 allParts=await r.json();
+await loadWarningRules();
 showParts(allParts);
 showStockWarnings();
 renderBulkTable();
 }
 
+async function loadWarningRules(){
+const r=await fetch(WARNING_API+"?select=*",{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+warningRules=await r.json();
+}
+
 function qty(p){return Number(p.quantity||0)}
-function cardClass(p){if(qty(p)<=0)return"card critical";if(qty(p)<=LOW_STOCK_LIMIT)return"card low";return"card"}
+
+function getWarningLevel(partType){
+const rule=warningRules.find(r=>
+String(r.part_type||"").toLowerCase()===String(partType||"").toLowerCase()
+);
+return rule ? Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT) : DEFAULT_LOW_STOCK_LIMIT;
+}
+
+function cardClass(p){
+const warning=getWarningLevel(p.part_type);
+if(qty(p)<=0)return"card critical";
+if(qty(p)<=warning)return"card low";
+return"card";
+}
+
 function partMatches(p,s){return JSON.stringify(p).toLowerCase().includes(s)}
 
 function searchParts(){
@@ -282,6 +314,7 @@ showParts(allParts.filter(p=>partMatches(p,s)));
 
 function renderPartCard(part){
 const encoded=encodeURIComponent(JSON.stringify(part));
+const warning=getWarningLevel(part.part_type);
 return `
 <div class="${cardClass(part)}">
 <h2>${part.part_name||""}</h2>
@@ -289,6 +322,7 @@ return `
 <p><b>Part Code:</b> ${part.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${part.part_type||""}</p>
 <p class="qty"><b>Quantity:</b> ${qty(part)}</p>
+<p class="small">Warning level for this type: ${warning}</p>
 <button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
 <button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)+1},'MANUAL IN','')">+</button>
 <p class="location">${part.rack?"Rack "+part.rack:""}${part.shelf?" | Shelf "+part.shelf:""}${part.drawer?" | Drawer "+part.drawer:""}</p>
@@ -296,11 +330,77 @@ return `
 </div>`;
 }
 
-function showParts(parts){document.getElementById("results").innerHTML=parts.map(renderPartCard).join("")}
+function showParts(parts){
+document.getElementById("results").innerHTML=parts.map(renderPartCard).join("");
+}
 
 function showStockWarnings(){
-const low=[...allParts].filter(p=>qty(p)<=LOW_STOCK_LIMIT).sort((a,b)=>qty(a)-qty(b));
-document.getElementById("stockResults").innerHTML=low.length?low.map(renderPartCard).join(""):`<div class="card"><h2>No low stock items</h2></div>`;
+const low=[...allParts]
+.filter(p=>qty(p)<=getWarningLevel(p.part_type))
+.sort((a,b)=>qty(a)-qty(b));
+
+document.getElementById("stockResults").innerHTML=low.length
+? low.map(renderPartCard).join("")
+: `<div class="card"><h2>No low stock items</h2></div>`;
+}
+
+function showWarningSettings(){
+const partTypes=[...new Set(allParts.map(p=>p.part_type||"Unknown").filter(Boolean))].sort();
+
+document.getElementById("warningSettingsResults").innerHTML=`
+<table>
+<thead>
+<tr>
+<th>Part Type</th>
+<th>Warning Level</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody>
+${partTypes.map((type,i)=>`
+<tr>
+<td>${type}</td>
+<td><input id="warn-${i}" type="number" value="${getWarningLevel(type)}"></td>
+<td><button onclick="saveWarningRule('${encodeURIComponent(type)}','warn-${i}')">Save</button></td>
+</tr>
+`).join("")}
+</tbody>
+</table>`;
+}
+
+async function saveWarningRule(encodedType,inputId){
+const type=decodeURIComponent(encodedType);
+const level=Number(document.getElementById(inputId).value||DEFAULT_LOW_STOCK_LIMIT);
+
+const existing=warningRules.find(r=>
+String(r.part_type||"").toLowerCase()===String(type||"").toLowerCase()
+);
+
+let response;
+
+if(existing){
+response=await fetch(WARNING_API+"?id=eq."+existing.id,{
+method:"PATCH",
+headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
+body:JSON.stringify({warning_level:level})
+});
+}else{
+response=await fetch(WARNING_API,{
+method:"POST",
+headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
+body:JSON.stringify({part_type:type,warning_level:level})
+});
+}
+
+if(!response.ok){
+alert(await response.text());
+return;
+}
+
+alert("Warning level saved");
+await loadWarningRules();
+showWarningSettings();
+showStockWarnings();
 }
 
 function changeQuantityFromEncoded(encoded,newQty,type,job){
