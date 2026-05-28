@@ -26,6 +26,7 @@ table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
 th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
 td input{margin:0;padding:8px}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
 .map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
 .workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
@@ -44,6 +45,7 @@ header{padding:8px}
 nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 nav button{font-size:11px;padding:8px 4px;margin:0}
 .page{padding:8px}
+.filter-grid{grid-template-columns:1fr}
 table{font-size:12px}
 th,td{padding:5px}
 body.map-mode{overflow:hidden;height:100vh}
@@ -80,8 +82,8 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <div id="addPage" class="page">
 <h2>Add New Part</h2>
 <input id="newPartName" placeholder="Part Name">
-<input id="newSupplier" placeholder="Supplier">
-<input id="newMPN" placeholder="Manufacturer Part Number">
+<input id="newSupplier" placeholder="Supplier / Manufacturer">
+<input id="newMPN" placeholder="Manufacturer Part Number / Part Code">
 <input id="newType" placeholder="Part Type">
 <input id="newRack" placeholder="Rack">
 <input id="newShelf" placeholder="Shelf">
@@ -104,7 +106,14 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="movementPage" class="page">
 <h2>Stock In / Out</h2>
-<select id="movePart"></select>
+<p class="small">Search for a part, select it, then submit stock in or out.</p>
+
+<input id="moveSearch" placeholder="Search part name, supplier, part code, type, rack, shelf or drawer..." oninput="showMovementSearchResults()">
+<div id="moveSearchResults"></div>
+
+<h3>Selected Part</h3>
+<div id="selectedMovePart" class="card">No part selected.</div>
+
 <select id="moveType">
 <option value="IN">Stock In</option>
 <option value="OUT">Stock Out</option>
@@ -134,7 +143,34 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="historyPage" class="page">
 <h2>Stock Movement / Job History</h2>
-<input id="historySearch" placeholder="Search by part, MPN, or job number..." oninput="showHistory()">
+
+<input id="historySearch" placeholder="Search all fields including job number, part name, part code, supplier..." oninput="showHistory()">
+
+<div class="filter-grid">
+<select id="historyTypeFilter" onchange="showHistory()">
+<option value="">All Movement Types</option>
+<option value="IN">Stock In</option>
+<option value="OUT">Stock Out</option>
+<option value="MANUAL IN">Manual In</option>
+<option value="MANUAL OUT">Manual Out</option>
+<option value="JOB OUT">Job Out</option>
+</select>
+
+<select id="historySupplierFilter" onchange="showHistory()">
+<option value="">All Suppliers / Manufacturers</option>
+</select>
+
+<select id="historyPartTypeFilter" onchange="showHistory()">
+<option value="">All Part Types</option>
+</select>
+
+<select id="historyJobFilter" onchange="showHistory()">
+<option value="">All Job Numbers</option>
+</select>
+</div>
+
+<button onclick="clearHistoryFilters()">Clear Filters</button>
+
 <div id="historyResults"></div>
 </div>
 
@@ -206,6 +242,7 @@ const LOW_STOCK_LIMIT=2;
 let allParts=[];
 let movements=[];
 let bulkItems=[];
+let selectedMovementPart=null;
 
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -213,7 +250,7 @@ document.getElementById(page).classList.add("active");
 document.body.classList.toggle("map-mode",page==="mapPage");
 if(page==="editPage")showEditParts();
 if(page==="stockPage")showStockWarnings();
-if(page==="movementPage")populateMovementParts();
+if(page==="movementPage"){selectedMovementPart=null;document.getElementById("selectedMovePart").innerHTML="No part selected.";showMovementSearchResults();}
 if(page==="bulkPage"){showBulkSearchResults();renderBulkTable();}
 if(page==="historyPage")loadMovements();
 }
@@ -223,7 +260,6 @@ const r=await fetch(API,{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY
 allParts=await r.json();
 showParts(allParts);
 showStockWarnings();
-populateMovementParts();
 renderBulkTable();
 }
 
@@ -232,7 +268,11 @@ function cardClass(p){if(qty(p)<=0)return"card critical";if(qty(p)<=LOW_STOCK_LI
 
 function searchParts(){
 const s=document.getElementById("search").value.toLowerCase();
-showParts(allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s)));
+showParts(allParts.filter(p=>partMatches(p,s)));
+}
+
+function partMatches(p,s){
+return JSON.stringify(p).toLowerCase().includes(s);
 }
 
 function renderPartCard(part){
@@ -240,8 +280,8 @@ const encoded=encodeURIComponent(JSON.stringify(part));
 return `
 <div class="${cardClass(part)}">
 <h2>${part.part_name||""}</h2>
-<p><b>Supplier:</b> ${part.supplier_name||""}</p>
-<p><b>Part Number:</b> ${part.manufacturer_part_number||""}</p>
+<p><b>Supplier / Manufacturer:</b> ${part.supplier_name||""}</p>
+<p><b>Part Code:</b> ${part.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${part.part_type||""}</p>
 <p class="qty"><b>Quantity:</b> ${qty(part)}</p>
 <button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
@@ -273,13 +313,14 @@ body:JSON.stringify({"Quantity":Number(newQty)})
 });
 if(!r.ok){alert(await r.text());return}
 
+const oldQty=qty(part);
 const index=allParts.findIndex(p=>(p.id&&p.id===part.id)||(!p.id&&p.manufacturer_part_number===part.manufacturer_part_number));
 if(index!==-1)allParts[index].quantity=Number(newQty);
 
-await logMovement(part,type,Math.abs(qty(part)-newQty),job,notes);
+await logMovement(part,type,Math.abs(oldQty-newQty),job,notes);
 
 const search=document.getElementById("search").value.toLowerCase();
-showParts(search?allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(search)):allParts);
+showParts(search?allParts.filter(p=>partMatches(p,search)):allParts);
 showStockWarnings();
 renderBulkTable();
 }
@@ -321,7 +362,7 @@ showPage("searchPage");
 
 function showEditParts(){
 const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
-const list=allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s));
+const list=allParts.filter(p=>partMatches(p,s));
 document.getElementById("editResults").innerHTML=list.map(p=>{
 const id=p.id||"";
 return `
@@ -358,14 +399,44 @@ await loadParts();
 showEditParts();
 }
 
-function populateMovementParts(){
-const sel=document.getElementById("movePart");
-if(!sel)return;
-sel.innerHTML=allParts.map((p,i)=>`<option value="${i}">${p.part_name} | ${p.manufacturer_part_number} | Qty ${qty(p)}</option>`).join("");
+function showMovementSearchResults(){
+const box=document.getElementById("moveSearchResults");
+if(!box)return;
+const s=(document.getElementById("moveSearch")?.value||"").toLowerCase();
+
+if(!s){
+box.innerHTML=`<div class="card"><p>Search for a part to select it.</p></div>`;
+return;
+}
+
+const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
+
+box.innerHTML=matches.length?matches.map((p,i)=>{
+const encoded=encodeURIComponent(JSON.stringify(p));
+return `
+<div class="card">
+<h2>${p.part_name||""}</h2>
+<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
+<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
+<p><b>Type:</b> ${p.part_type||""}</p>
+<p><b>Current Qty:</b> ${qty(p)}</p>
+<button onclick="selectMovementPart('${encoded}')">Select This Part</button>
+</div>`;
+}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
+}
+
+function selectMovementPart(encoded){
+selectedMovementPart=JSON.parse(decodeURIComponent(encoded));
+document.getElementById("selectedMovePart").innerHTML=`
+<h2>${selectedMovementPart.part_name||""}</h2>
+<p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
+<p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
+<p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
+<p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>`;
 }
 
 async function submitMovement(){
-const p=allParts[Number(document.getElementById("movePart").value)];
+const p=selectedMovementPart;
 const type=document.getElementById("moveType").value;
 const amount=Number(document.getElementById("moveQty").value||0);
 const job=document.getElementById("moveJob").value;
@@ -386,14 +457,15 @@ box.innerHTML=`<div class="card"><p>Start typing to search parts.</p></div>`;
 return;
 }
 
-const matches=allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s)).slice(0,20);
+const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
 
 box.innerHTML=matches.length?matches.map(p=>{
 const encoded=encodeURIComponent(JSON.stringify(p));
 return `
 <div class="card">
 <h2>${p.part_name||""}</h2>
-<p><b>MPN:</b> ${p.manufacturer_part_number||""}</p>
+<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
+<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
 <p><b>Current Qty:</b> ${qty(p)}</p>
 <p class="location">${p.rack?"Rack "+p.rack:""}${p.shelf?" | Shelf "+p.shelf:""}${p.drawer?" | Drawer "+p.drawer:""}</p>
 <button onclick="addToBulkJob('${encoded}')">Add to Job</button>
@@ -428,7 +500,7 @@ box.innerHTML=`
 <thead>
 <tr>
 <th>Part</th>
-<th>MPN</th>
+<th>Part Code</th>
 <th>Stock</th>
 <th>Qty Used</th>
 <th>Remove</th>
@@ -495,22 +567,80 @@ showPage("historyPage");
 async function loadMovements(){
 const r=await fetch(MOVEMENT_API+"?select=*&order=created_at.desc",{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
 movements=await r.json();
+populateHistoryFilters();
 showHistory();
 }
 
+function getPartForMovement(m){
+return allParts.find(p=>
+(p.id&&m.part_id&&p.id===m.part_id) ||
+(p.manufacturer_part_number&&m.manufacturer_part_number&&p.manufacturer_part_number===m.manufacturer_part_number)
+) || {};
+}
+
+function populateHistoryFilters(){
+const suppliers=[...new Set(allParts.map(p=>p.supplier_name).filter(Boolean))].sort();
+const types=[...new Set(allParts.map(p=>p.part_type).filter(Boolean))].sort();
+const jobs=[...new Set(movements.map(m=>m.job_number).filter(Boolean))].sort();
+
+document.getElementById("historySupplierFilter").innerHTML=`<option value="">All Suppliers / Manufacturers</option>`+suppliers.map(v=>`<option value="${v}">${v}</option>`).join("");
+document.getElementById("historyPartTypeFilter").innerHTML=`<option value="">All Part Types</option>`+types.map(v=>`<option value="${v}">${v}</option>`).join("");
+document.getElementById("historyJobFilter").innerHTML=`<option value="">All Job Numbers</option>`+jobs.map(v=>`<option value="${v}">${v}</option>`).join("");
+}
+
 function showHistory(){
-const s=(document.getElementById("historySearch")?.value||"").toLowerCase();
-const list=movements.filter(m=>JSON.stringify(m).toLowerCase().includes(s));
-document.getElementById("historyResults").innerHTML=list.map(m=>`
+const search=(document.getElementById("historySearch")?.value||"").toLowerCase();
+const typeFilter=document.getElementById("historyTypeFilter")?.value||"";
+const supplierFilter=document.getElementById("historySupplierFilter")?.value||"";
+const partTypeFilter=document.getElementById("historyPartTypeFilter")?.value||"";
+const jobFilter=document.getElementById("historyJobFilter")?.value||"";
+
+const list=movements.filter(m=>{
+const p=getPartForMovement(m);
+
+const combined={
+...m,
+supplier_name:p.supplier_name||"",
+part_type:p.part_type||"",
+rack:p.rack||"",
+shelf:p.shelf||"",
+drawer:p.drawer||""
+};
+
+if(search && !JSON.stringify(combined).toLowerCase().includes(search))return false;
+if(typeFilter && m.movement_type!==typeFilter)return false;
+if(supplierFilter && p.supplier_name!==supplierFilter)return false;
+if(partTypeFilter && p.part_type!==partTypeFilter)return false;
+if(jobFilter && m.job_number!==jobFilter)return false;
+
+return true;
+});
+
+document.getElementById("historyResults").innerHTML=list.map(m=>{
+const p=getPartForMovement(m);
+return `
 <div class="card">
 <h2>${m.part_name||""}</h2>
-<p><b>MPN:</b> ${m.manufacturer_part_number||""}</p>
+<p><b>Part Code:</b> ${m.manufacturer_part_number||""}</p>
+<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
+<p><b>Part Type:</b> ${p.part_type||""}</p>
 <p><b>Movement:</b> ${m.movement_type||""}</p>
 <p><b>Quantity:</b> ${m.quantity||""}</p>
 <p><b>Job:</b> ${m.job_number||""}</p>
 <p><b>Notes:</b> ${m.notes||""}</p>
+<p class="location">${p.rack?"Rack "+p.rack:""}${p.shelf?" | Shelf "+p.shelf:""}${p.drawer?" | Drawer "+p.drawer:""}</p>
 <p class="small">${m.created_at||""}</p>
-</div>`).join("");
+</div>`;
+}).join("");
+}
+
+function clearHistoryFilters(){
+document.getElementById("historySearch").value="";
+document.getElementById("historyTypeFilter").value="";
+document.getElementById("historySupplierFilter").value="";
+document.getElementById("historyPartTypeFilter").value="";
+document.getElementById("historyJobFilter").value="";
+showHistory();
 }
 
 function clearHighlights(){document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"))}
