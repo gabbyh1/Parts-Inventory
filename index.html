@@ -38,7 +38,6 @@ td input{margin:0;padding:8px}
 .shelf-box{background:#dce6f2;border:2px solid black;color:black}
 .shelf-title{background:#2d65b3;color:white;text-align:center;padding:8px;font-weight:bold}
 .shelf,.drawer-row{border-top:1px solid black;padding:8px;text-align:center}
-
 @media(max-width:700px){
 html,body{overflow-x:hidden;overflow-y:auto}
 h1{font-size:18px}
@@ -173,6 +172,7 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 </div>
 
 <button onclick="clearHistoryFilters()">Clear Filters</button>
+<button onclick="exportHistoryToExcel()">Export Current Results to Excel</button>
 
 <div id="historyResults"></div>
 </div>
@@ -273,7 +273,6 @@ renderBulkTable();
 
 function qty(p){return Number(p.quantity||0)}
 function cardClass(p){if(qty(p)<=0)return"card critical";if(qty(p)<=LOW_STOCK_LIMIT)return"card low";return"card"}
-
 function partMatches(p,s){return JSON.stringify(p).toLowerCase().includes(s)}
 
 function searchParts(){
@@ -414,7 +413,6 @@ showEditParts();
 function showMovementSearchResults(){
 const box=document.getElementById("moveSearchResults");
 if(!box)return;
-
 const s=(document.getElementById("moveSearch")?.value||"").toLowerCase();
 
 if(!s){
@@ -554,35 +552,16 @@ ${bulkItems.map((item,i)=>`
 </table>`;
 }
 
-function updateBulkAmount(index,value){
-bulkItems[index].amount=Number(value||0);
-}
-
-function removeBulkItem(index){
-bulkItems.splice(index,1);
-renderBulkTable();
-}
-
-function clearBulkJob(){
-bulkItems=[];
-document.getElementById("bulkSearch").value="";
-renderBulkTable();
-showBulkSearchResults();
-}
+function updateBulkAmount(index,value){bulkItems[index].amount=Number(value||0)}
+function removeBulkItem(index){bulkItems.splice(index,1);renderBulkTable()}
+function clearBulkJob(){bulkItems=[];document.getElementById("bulkSearch").value="";renderBulkTable();showBulkSearchResults()}
 
 async function submitBulkIssue(){
 const job=document.getElementById("bulkJob").value;
 const notes=document.getElementById("bulkNotes").value;
 
-if(!job){
-alert("Enter a job number");
-return;
-}
-
-if(bulkItems.length===0){
-alert("Add at least one part to the job table.");
-return;
-}
+if(!job){alert("Enter a job number");return}
+if(bulkItems.length===0){alert("Add at least one part to the job table.");return}
 
 for(const item of bulkItems){
 const amount=Number(item.amount||0);
@@ -622,14 +601,14 @@ document.getElementById("historyPartTypeFilter").innerHTML=`<option value="">All
 document.getElementById("historyJobFilter").innerHTML=`<option value="">All Job Numbers</option>`+jobs.map(v=>`<option value="${v}">${v}</option>`).join("");
 }
 
-function showHistory(){
+function filteredHistoryResults(){
 const search=(document.getElementById("historySearch")?.value||"").toLowerCase();
 const typeFilter=document.getElementById("historyTypeFilter")?.value||"";
 const supplierFilter=document.getElementById("historySupplierFilter")?.value||"";
 const partTypeFilter=document.getElementById("historyPartTypeFilter")?.value||"";
 const jobFilter=document.getElementById("historyJobFilter")?.value||"";
 
-const list=movements.filter(m=>{
+return movements.filter(m=>{
 const p=getPartForMovement(m);
 
 const combined={...m,supplier_name:p.supplier_name||"",part_type:p.part_type||"",rack:p.rack||"",shelf:p.shelf||"",drawer:p.drawer||""};
@@ -642,6 +621,10 @@ if(jobFilter && m.job_number!==jobFilter)return false;
 
 return true;
 });
+}
+
+function showHistory(){
+const list=filteredHistoryResults();
 
 document.getElementById("historyResults").innerHTML=list.map(m=>{
 const p=getPartForMovement(m);
@@ -668,6 +651,38 @@ document.getElementById("historySupplierFilter").value="";
 document.getElementById("historyPartTypeFilter").value="";
 document.getElementById("historyJobFilter").value="";
 showHistory();
+}
+
+function exportHistoryToExcel(){
+const filtered=filteredHistoryResults();
+
+let csv="Date,Part Name,Part Code,Supplier,Part Type,Movement,Quantity,Job Number,Notes,Rack,Shelf,Drawer\n";
+
+filtered.forEach(m=>{
+const p=getPartForMovement(m);
+
+csv += [
+m.created_at||"",
+m.part_name||"",
+m.manufacturer_part_number||"",
+p.supplier_name||"",
+p.part_type||"",
+m.movement_type||"",
+m.quantity||"",
+m.job_number||"",
+m.notes||"",
+p.rack||"",
+p.shelf||"",
+p.drawer||""
+].map(value => `"${String(value).replace(/"/g,'""')}"`).join(",") + "\n";
+});
+
+const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+const link=document.createElement("a");
+
+link.href=URL.createObjectURL(blob);
+link.download="stock_movement_history.csv";
+link.click();
 }
 
 function clearHighlights(){document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"))}
