@@ -6,54 +6,300 @@
 <title>Electrical Parts</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0a0a0a;color:white;overflow-x:hidden}
-header{background:#111;border-bottom:4px solid #cc0000;padding:12px}
-h1{margin:0;color:#ff2b2b;font-size:26px}
-nav{margin-top:10px}
-nav button{background:#cc0000;border:none;color:white;padding:11px;margin:4px;border-radius:10px;font-weight:bold;cursor:pointer}
-.page{display:none;padding:12px}.active{display:block}
-input{width:100%;padding:16px;font-size:18px;border:none;border-radius:10px;margin-bottom:15px;box-sizing:border-box}
-.card{background:#161616;border-left:6px solid #cc0000;padding:14px;margin-bottom:12px;border-radius:12px}
-.card h2{margin-top:0;color:#ff4d4d}
-.location{color:#00ff88;font-weight:bold}
-.qty{font-size:20px;font-weight:bold;color:#fff}
-.low{border-left-color:#ffcc00}
-.critical{border-left-color:#ff0000}
-.card button,.add-form button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radius:8px;font-weight:bold;margin:5px 4px 0 0;cursor:pointer}
-.qty-btn{font-size:20px;width:42px}
+body{
+margin:0;
+font-family:Arial;
+background:#0a0a0a;
+color:white;
+overflow-x:hidden;
+}
 
-.map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
-.map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
-.workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
-.box{position:absolute;border:2px solid black;background:#dce6f2;display:flex;justify-content:center;align-items:center;text-align:center;color:black;font-weight:bold;font-size:14px}
-.highlight{background:#00ff55!important;box-shadow:0 0 25px #00ff55;animation:flash 1s infinite}
-@keyframes flash{0%{opacity:1}50%{opacity:.45}100%{opacity:1}}
-.side-panel{display:flex;flex-direction:column;gap:18px;width:260px;flex-shrink:0}
-.shelf-box{background:#dce6f2;border:2px solid black;color:black}
-.shelf-title{background:#2d65b3;color:white;text-align:center;padding:8px;font-weight:bold}
-.shelf,.drawer-row{border-top:1px solid black;padding:8px;text-align:center}
+header{
+background:#111;
+border-bottom:4px solid #cc0000;
+padding:12px;
+}
+
+h1{
+margin:0;
+color:#ff2b2b;
+font-size:26px;
+}
+
+nav{
+margin-top:10px;
+}
+
+nav button{
+background:#cc0000;
+border:none;
+color:white;
+padding:11px;
+margin:4px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.page{
+display:none;
+padding:12px;
+}
+
+.active{
+display:block;
+}
+
+input{
+width:100%;
+padding:16px;
+font-size:18px;
+border:none;
+border-radius:10px;
+margin-bottom:15px;
+box-sizing:border-box;
+}
+
+.card{
+background:#161616;
+border-left:6px solid #cc0000;
+padding:14px;
+margin-bottom:12px;
+border-radius:12px;
+}
+
+.card h2{
+margin-top:0;
+color:#ff4d4d;
+}
+
+.location{
+color:#00ff88;
+font-weight:bold;
+}
+
+.qty{
+font-size:20px;
+font-weight:bold;
+color:white;
+}
+
+.low{
+border-left-color:#ffcc00;
+}
+
+.critical{
+border-left-color:#ff0000;
+}
+
+.card button,
+.add-form button{
+background:#cc0000;
+border:none;
+color:white;
+padding:10px 14px;
+border-radius:8px;
+font-weight:bold;
+margin:5px 4px 0 0;
+cursor:pointer;
+}
+
+.qty-btn{
+font-size:20px;
+width:42px;
+}
+
+.map-wrap{
+width:100%;
+display:flex;
+justify-content:center;
+align-items:flex-start;
+overflow:hidden;
+}
+
+.map-container{
+display:flex;
+gap:20px;
+align-items:flex-start;
+transform-origin:top center;
+}
+
+.workshop{
+width:720px;
+height:560px;
+background:#efefef;
+border:4px solid black;
+position:relative;
+flex-shrink:0;
+}
+
+.box{
+position:absolute;
+border:2px solid black;
+background:#dce6f2;
+display:flex;
+justify-content:center;
+align-items:center;
+text-align:center;
+color:black;
+font-weight:bold;
+font-size:14px;
+transition:0.3s;
+}
+
+.highlight{
+background:#00ff55 !important;
+box-shadow:0 0 25px #00ff55;
+animation:flash 1s infinite;
+}
+
+@keyframes flash{
+0%{opacity:1}
+50%{opacity:.45}
+100%{opacity:1}
+}
+
+.side-panel{
+display:flex;
+flex-direction:column;
+gap:18px;
+width:260px;
+flex-shrink:0;
+}
+
+.shelf-box{
+background:#dce6f2;
+border:2px solid black;
+color:black;
+}
+
+.shelf-title{
+background:#2d65b3;
+color:white;
+text-align:center;
+padding:8px;
+font-weight:bold;
+}
+
+.shelf,
+.drawer-row{
+border-top:1px solid black;
+padding:8px;
+text-align:center;
+transition:0.3s;
+}
 
 @media(max-width:700px){
-html,body{overflow-x:hidden;overflow-y:auto}
-h1{font-size:18px}
-header{padding:8px}
-nav{margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
-nav button{font-size:11px;padding:8px 4px;margin:0;border-radius:6px}
-.page{padding:8px}
-#searchPage,#addPage,#stockPage{height:auto;overflow-y:auto}
-body.map-mode{overflow:hidden;height:100vh}
-body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
-body.map-mode header{height:60px;box-sizing:border-box}
-#mapPage h2{display:none}
-#selectedInfo{font-size:9px;line-height:1.1}
-#selectedInfo .card{padding:4px;margin-bottom:3px;font-size:9px}
-.map-wrap{height:calc(100vh - 118px);overflow:hidden;display:flex;justify-content:center;align-items:flex-start}
-.map-container{transform:scale(0.31);transform-origin:top center}
-.card{padding:10px;font-size:14px}
-.card h2{font-size:18px}
-input{font-size:16px;padding:14px}
+
+html, body{
+overflow-x:hidden;
+overflow-y:auto;
 }
-@media(max-width:390px){.map-container{transform:scale(0.28)}.map-wrap{height:calc(100vh - 112px)}}
+
+h1{
+font-size:18px;
+}
+
+header{
+padding:8px;
+}
+
+nav{
+margin-top:6px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:4px;
+}
+
+nav button{
+font-size:11px;
+padding:8px 4px;
+margin:0;
+border-radius:6px;
+}
+
+.page{
+padding:8px;
+}
+
+#searchPage,
+#addPage,
+#stockPage{
+height:auto;
+overflow-y:auto;
+}
+
+body.map-mode{
+overflow:hidden;
+height:100vh;
+}
+
+body.map-mode #mapPage{
+height:calc(100vh - 76px);
+overflow:hidden;
+padding:4px;
+}
+
+body.map-mode header{
+height:60px;
+box-sizing:border-box;
+}
+
+#mapPage h2{
+display:none;
+}
+
+#selectedInfo{
+font-size:9px;
+line-height:1.1;
+}
+
+#selectedInfo .card{
+padding:4px;
+margin-bottom:3px;
+font-size:9px;
+}
+
+.map-wrap{
+height:calc(100vh - 118px);
+overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:flex-start;
+}
+
+.map-container{
+transform:scale(0.31);
+transform-origin:top center;
+}
+
+.card{
+padding:10px;
+font-size:14px;
+}
+
+.card h2{
+font-size:18px;
+}
+
+input{
+font-size:16px;
+padding:14px;
+}
+
+}
+
+@media(max-width:390px){
+
+.map-container{
+transform:scale(0.28);
+}
+
+.map-wrap{
+height:calc(100vh - 112px);
+}
+
+}
 </style>
 </head>
 
@@ -61,6 +307,7 @@ input{font-size:16px;padding:14px}
 
 <header>
 <h1>Electrical Parts</h1>
+
 <nav>
 <button onclick="showPage('searchPage')">Search</button>
 <button onclick="showPage('addPage')">Add Part</button>
@@ -76,6 +323,7 @@ input{font-size:16px;padding:14px}
 
 <div id="addPage" class="page">
 <h2>Add New Part</h2>
+
 <div class="add-form">
 <input id="newPartName" placeholder="Part Name">
 <input id="newSupplier" placeholder="Supplier">
@@ -103,21 +351,28 @@ input{font-size:16px;padding:14px}
 <div class="map-container">
 
 <div class="workshop">
+
 <div class="box" id="rack-13" style="top:30px;left:30px;width:200px;height:55px">Rack 13</div>
 <div class="box" id="rack-14" style="top:30px;left:230px;width:200px;height:55px">Rack 14</div>
 <div class="box" id="rack-15" style="top:30px;left:430px;width:200px;height:55px">Rack 15</div>
+
 <div class="box" id="rack-16" style="top:85px;left:30px;width:200px;height:55px">Rack 16</div>
 <div class="box" id="rack-17" style="top:85px;left:230px;width:200px;height:55px">Rack 17</div>
 <div class="box" id="rack-18" style="top:85px;left:430px;width:200px;height:55px">Rack 18</div>
+
 <div class="box" id="right-drawer-main" style="top:190px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Right Drawer</div>
 <div class="box" id="left-drawer-main" style="top:350px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Left Drawer</div>
+
 <div class="box" style="top:310px;left:150px;width:280px;height:100px;background:#ddd9cf">Bench</div>
 <div class="box" style="top:410px;left:320px;width:110px;height:120px;background:#ddd9cf"></div>
+
 <div class="box" id="cupboard-1" style="bottom:40px;left:40px;width:220px;height:55px">Cupboard 1</div>
 <div class="box" id="rack-19" style="bottom:40px;right:50px;width:220px;height:55px">Rack 19</div>
+
 </div>
 
 <div class="side-panel">
+
 <div class="shelf-box">
 <div class="shelf-title">Rack Shelves</div>
 <div class="shelf" id="shelf-1">Shelf 1</div>
@@ -149,8 +404,8 @@ input{font-size:16px;padding:14px}
 <div class="drawer-row" id="right-drawer-6">R6</div>
 <div class="drawer-row" id="right-drawer-7">R7</div>
 </div>
-</div>
 
+</div>
 </div>
 </div>
 </div>
@@ -166,20 +421,40 @@ let allParts=[];
 function showPage(page){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 document.getElementById(page).classList.add("active");
-if(page==="mapPage"){document.body.classList.add("map-mode")}else{document.body.classList.remove("map-mode")}
-if(page==="stockPage"){showStockWarnings()}
+
+if(page==="mapPage"){
+document.body.classList.add("map-mode");
+}else{
+document.body.classList.remove("map-mode");
+}
+
+if(page==="stockPage"){
+showStockWarnings();
+}
 }
 
 async function loadParts(){
-const response=await fetch(API,{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+const response=await fetch(API,{
+headers:{
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY
+}
+});
+
 allParts=await response.json();
+
 showParts(allParts);
 showStockWarnings();
 }
 
 function searchParts(){
 const search=document.getElementById("search").value.toLowerCase();
-showParts(allParts.filter(part=>JSON.stringify(part).toLowerCase().includes(search)));
+
+showParts(
+allParts.filter(part =>
+JSON.stringify(part).toLowerCase().includes(search)
+)
+);
 }
 
 function qty(part){
@@ -187,19 +462,29 @@ return Number(part.quantity || 0);
 }
 
 function cardClass(part){
-if(qty(part)<=0) return "card critical";
-if(qty(part)<=LOW_STOCK_LIMIT) return "card low";
+if(qty(part)<=0){
+return "card critical";
+}
+
+if(qty(part)<=LOW_STOCK_LIMIT){
+return "card low";
+}
+
 return "card";
 }
 
 function renderPartCard(part){
 return `
 <div class="${cardClass(part)}">
-<h2>${part.part_name||""}</h2>
-<p><b>Supplier:</b> ${part.supplier_name||""}</p>
-<p><b>Part Number:</b> ${part.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${part.part_type||""}</p>
-<p class="qty"><b>Quantity:</b> ${qty(part)}</p>
+<h2>${part.part_name || ""}</h2>
+
+<p><b>Supplier:</b> ${part.supplier_name || ""}</p>
+<p><b>Part Number:</b> ${part.manufacturer_part_number || ""}</p>
+<p><b>Type:</b> ${part.part_type || ""}</p>
+
+<p class="qty">
+<b>Quantity:</b> ${qty(part)}
+</p>
 
 <button class="qty-btn" onclick="changeQuantity(${part.id}, ${qty(part)-1})">-</button>
 <button class="qty-btn" onclick="changeQuantity(${part.id}, ${qty(part)+1})">+</button>
@@ -210,49 +495,87 @@ ${part.shelf ? " | Shelf " + part.shelf : ""}
 ${part.drawer ? " | Drawer " + part.drawer : ""}
 </p>
 
-<button onclick='showMap(${JSON.stringify(part.rack||"")},${JSON.stringify(part.shelf||"")},${JSON.stringify(part.drawer||"")})'>View Location on Map</button>
+<button onclick='showMap(${JSON.stringify(part.rack || "")},${JSON.stringify(part.shelf || "")},${JSON.stringify(part.drawer || "")})'>
+View Location on Map
+</button>
 </div>`;
 }
 
 function showParts(parts){
-document.getElementById("results").innerHTML=parts.map(renderPartCard).join("");
+document.getElementById("results").innerHTML=
+parts.map(renderPartCard).join("");
 }
 
 function showStockWarnings(){
-const low=[...allParts].sort((a,b)=>qty(a)-qty(b)).filter(p=>qty(p)<=LOW_STOCK_LIMIT);
-document.getElementById("stockResults").innerHTML=low.length
+const low=[...allParts]
+.sort((a,b)=>qty(a)-qty(b))
+.filter(part => qty(part)<=LOW_STOCK_LIMIT);
+
+document.getElementById("stockResults").innerHTML=
+low.length
 ? low.map(renderPartCard).join("")
 : `<div class="card"><h2>No low stock items</h2><p>Everything is above ${LOW_STOCK_LIMIT}.</p></div>`;
 }
 
 async function changeQuantity(id,newQty){
-if(newQty<0)newQty=0;
 
-const response=await fetch(TABLE_API+"?id=eq."+id,{
+if(newQty<0){
+newQty=0;
+}
+
+const response=await fetch(
+TABLE_API+"?id=eq."+id,
+{
 method:"PATCH",
 headers:{
 "Content-Type":"application/json",
 apikey:API_KEY,
 Authorization:"Bearer "+API_KEY,
-Prefer:"return=minimal"
+Prefer:"return=representation"
 },
-body:JSON.stringify({"Quantity":newQty})
-});
+body:JSON.stringify({
+"Quantity":Number(newQty)
+})
+}
+);
 
 if(!response.ok){
 alert(await response.text());
 return;
 }
 
+const updated=await response.json();
+
+if(updated.length===0){
+alert("No row was updated. Check that the id column exists in the Parts table.");
+return;
+}
+
 await loadParts();
+
+const currentSearch=document.getElementById("search").value.toLowerCase();
+
+if(currentSearch){
+showParts(
+allParts.filter(part =>
+JSON.stringify(part).toLowerCase().includes(currentSearch)
+)
+);
+}else{
+showParts(allParts);
+}
+
+showStockWarnings();
+
 }
 
 function clearHighlights(){
-document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"));
+document.querySelectorAll(".highlight")
+.forEach(e=>e.classList.remove("highlight"));
 }
 
 function extractNumber(value){
-const match=String(value||"").match(/\d+/);
+const match=String(value || "").match(/\d+/);
 return match ? match[0] : "";
 }
 
@@ -262,7 +585,7 @@ clearHighlights();
 
 const rackNum=extractNumber(rack);
 const shelfNum=extractNumber(shelf);
-const drawerRaw=String(drawer||"").trim();
+const drawerRaw=String(drawer || "").trim();
 const drawerText=drawerRaw.toLowerCase();
 const drawerNum=extractNumber(drawerText);
 
@@ -277,8 +600,13 @@ ${drawerRaw ? "Drawer " + drawerRaw : ""}
 const rackEl=document.getElementById("rack-"+rackNum);
 const shelfEl=document.getElementById("shelf-"+shelfNum);
 
-if(rackEl) rackEl.classList.add("highlight");
-if(shelfEl) shelfEl.classList.add("highlight");
+if(rackEl){
+rackEl.classList.add("highlight");
+}
+
+if(shelfEl){
+shelfEl.classList.add("highlight");
+}
 
 if(drawerText.startsWith("l") && drawerNum){
 document.getElementById("left-drawer-main").classList.add("highlight");
@@ -303,8 +631,23 @@ const newPart={
 "Quantity":Number(document.getElementById("newQuantity").value || 0)
 };
 
-await fetch(TABLE_API,{method:"POST",headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},body:JSON.stringify(newPart)});
+const response=await fetch(TABLE_API,{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY
+},
+body:JSON.stringify(newPart)
+});
+
+if(!response.ok){
+alert(await response.text());
+return;
+}
+
 alert("Part Added");
+
 loadParts();
 showPage("searchPage");
 }
