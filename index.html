@@ -31,6 +31,27 @@ th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
 td input{margin:0;padding:8px}
 .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+#loginScreen{
+position:fixed;
+inset:0;
+background:#0a0a0a;
+z-index:9999;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.login-box{
+background:#161616;
+border-left:6px solid #cc0000;
+padding:25px;
+border-radius:14px;
+max-width:400px;
+width:100%;
+}
+
 .map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
 .map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
 .workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
@@ -63,6 +84,16 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <body>
 
+<div id="loginScreen">
+<div class="login-box">
+<h1>Electrical Parts</h1>
+<p>Enter password to continue</p>
+<input id="passwordInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter'){checkPassword()}">
+<button onclick="checkPassword()">Unlock</button>
+<p id="loginError" style="color:#ff4d4d;"></p>
+</div>
+</div>
+
 <header>
 <div class="top-row">
 <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
@@ -79,6 +110,7 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <button onclick="showPage('bulkPage');toggleMenu()">Bulk Job Issue</button>
 <button onclick="showPage('historyPage');toggleMenu()">Usage History</button>
 <button onclick="showPage('mapPage');toggleMenu()">Map</button>
+<button onclick="logout()">Logout</button>
 </nav>
 </header>
 
@@ -190,9 +222,9 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 
 <div id="historyResults"></div>
 </div>
-
 <div id="mapPage" class="page">
 <div id="selectedInfo"></div>
+
 <div class="map-wrap">
 <div class="map-container">
 
@@ -200,18 +232,23 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <div class="box" id="rack-13" style="top:30px;left:30px;width:200px;height:55px">Rack 13</div>
 <div class="box" id="rack-14" style="top:30px;left:230px;width:200px;height:55px">Rack 14</div>
 <div class="box" id="rack-15" style="top:30px;left:430px;width:200px;height:55px">Rack 15</div>
+
 <div class="box" id="rack-16" style="top:85px;left:30px;width:200px;height:55px">Rack 16</div>
 <div class="box" id="rack-17" style="top:85px;left:230px;width:200px;height:55px">Rack 17</div>
 <div class="box" id="rack-18" style="top:85px;left:430px;width:200px;height:55px">Rack 18</div>
+
 <div class="box" id="right-drawer-main" style="top:190px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Right Drawer</div>
 <div class="box" id="left-drawer-main" style="top:350px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Left Drawer</div>
+
 <div class="box" style="top:310px;left:150px;width:280px;height:100px;background:#ddd9cf">Bench</div>
 <div class="box" style="top:410px;left:320px;width:110px;height:120px;background:#ddd9cf"></div>
+
 <div class="box" id="cupboard-1" style="bottom:40px;left:40px;width:220px;height:55px">Cupboard 1</div>
 <div class="box" id="rack-19" style="bottom:40px;right:50px;width:220px;height:55px">Rack 19</div>
 </div>
 
 <div class="side-panel">
+
 <div class="shelf-box">
 <div class="shelf-title">Rack Shelves</div>
 <div class="shelf" id="shelf-1">Shelf 1</div>
@@ -243,18 +280,24 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <div class="drawer-row" id="right-drawer-6">R6</div>
 <div class="drawer-row" id="right-drawer-7">R7</div>
 </div>
-</div>
 
+</div>
 </div>
 </div>
 </div>
 
 <script>
+
+const PASSWORD_HASH =
+"a15b76f0a1c9ef43b45157bc098e93d443d8902a53653517dbcca59de9decd73";
+
 const API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/parts_public";
 const TABLE_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/Parts";
 const MOVEMENT_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_movements";
 const WARNING_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_warning_rules";
+
 const API_KEY="sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
+
 const DEFAULT_LOW_STOCK_LIMIT=2;
 
 let allParts=[];
@@ -262,6 +305,37 @@ let movements=[];
 let bulkItems=[];
 let selectedMovementPart=null;
 let warningRules=[];
+
+async function hashText(text){
+const encoder=new TextEncoder();
+const data=encoder.encode(text);
+const hashBuffer=await crypto.subtle.digest("SHA-256",data);
+const hashArray=Array.from(new Uint8Array(hashBuffer));
+return hashArray.map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function checkPassword(){
+const entered=document.getElementById("passwordInput").value;
+const hash=await hashText(entered);
+
+if(hash===PASSWORD_HASH){
+sessionStorage.setItem("unlocked","yes");
+document.getElementById("loginScreen").style.display="none";
+}else{
+document.getElementById("loginError").innerText="Incorrect password";
+}
+}
+
+function logout(){
+sessionStorage.removeItem("unlocked");
+location.reload();
+}
+
+window.addEventListener("load",()=>{
+if(sessionStorage.getItem("unlocked")==="yes"){
+document.getElementById("loginScreen").style.display="none";
+}
+});
 
 function toggleMenu(){
 document.getElementById("sideMenu").classList.toggle("open");
@@ -281,515 +355,137 @@ document.getElementById("selectedMovePart").className="card";
 document.getElementById("selectedMovePart").innerHTML="No part selected.";
 showMovementSearchResults();
 }
-if(page==="bulkPage"){showBulkSearchResults();renderBulkTable();}
+if(page==="bulkPage"){
+showBulkSearchResults();
+renderBulkTable();
+}
 if(page==="historyPage")loadMovements();
 }
 
 async function loadParts(){
-const r=await fetch(API,{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+const r=await fetch(API,{
+headers:{
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY
+}
+});
+
 allParts=await r.json();
+
 await loadWarningRules();
+
 showParts(allParts);
 showStockWarnings();
 renderBulkTable();
 }
 
 async function loadWarningRules(){
-const r=await fetch(WARNING_API+"?select=*",{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+const r=await fetch(WARNING_API+"?select=*",{
+headers:{
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY
+}
+});
+
 warningRules=await r.json();
 }
 
-function qty(p){return Number(p.quantity||0)}
+function qty(p){
+return Number(p.quantity||0);
+}
 
 function getWarningLevel(partType){
-const rule=warningRules.find(r=>String(r.part_type||"").toLowerCase()===String(partType||"").toLowerCase());
-return rule?Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT):DEFAULT_LOW_STOCK_LIMIT;
+const rule=warningRules.find(r=>
+String(r.part_type||"").toLowerCase()===
+String(partType||"").toLowerCase()
+);
+
+return rule
+? Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT)
+: DEFAULT_LOW_STOCK_LIMIT;
 }
 
 function cardClass(p){
 const warning=getWarningLevel(p.part_type);
+
 if(qty(p)<=0)return"card critical";
 if(qty(p)<=warning)return"card low";
+
 return"card";
 }
 
-function partMatches(p,s){return JSON.stringify(p).toLowerCase().includes(s)}
+function partMatches(p,s){
+return JSON.stringify(p).toLowerCase().includes(s);
+}
 
 function searchParts(){
 const s=document.getElementById("search").value.toLowerCase();
-showParts(allParts.filter(p=>partMatches(p,s)));
+
+showParts(
+allParts.filter(p=>partMatches(p,s))
+);
 }
 
 function renderPartCard(part){
+
 const encoded=encodeURIComponent(JSON.stringify(part));
 const warning=getWarningLevel(part.part_type);
+
 return `
 <div class="${cardClass(part)}">
+
 <h2>${part.part_name||""}</h2>
+
 <p><b>Supplier / Manufacturer:</b> ${part.supplier_name||""}</p>
+
 <p><b>Part Code:</b> ${part.manufacturer_part_number||""}</p>
+
 <p><b>Type:</b> ${part.part_type||""}</p>
+
 <p class="qty"><b>Quantity:</b> ${qty(part)}</p>
+
 <p class="small">Warning level for this type: ${warning}</p>
-<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
-<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)+1},'MANUAL IN','')">+</button>
-<p class="location">${part.rack?"Rack "+part.rack:""}${part.shelf?" | Shelf "+part.shelf:""}${part.drawer?" | Drawer "+part.drawer:""}</p>
-<button onclick='showMap(${JSON.stringify(part.rack||"")},${JSON.stringify(part.shelf||"")},${JSON.stringify(part.drawer||"")})'>View Location on Map</button>
+
+<button class="qty-btn"
+onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
+
+<button class="qty-btn"
+onclick="changeQuantityFromEncoded('${encoded}',${qty(part)+1},'MANUAL IN','')">+</button>
+
+<p class="location">
+${part.rack?"Rack "+part.rack:""}
+${part.shelf?" | Shelf "+part.shelf:""}
+${part.drawer?" | Drawer "+part.drawer:""}
+</p>
+
+<button onclick='showMap(
+${JSON.stringify(part.rack||"")},
+${JSON.stringify(part.shelf||"")},
+${JSON.stringify(part.drawer||"")}
+)'>View Location on Map</button>
+
 </div>`;
 }
 
 function showParts(parts){
-document.getElementById("results").innerHTML=parts.map(renderPartCard).join("");
+document.getElementById("results").innerHTML=
+parts.map(renderPartCard).join("");
 }
 
 function showStockWarnings(){
-const low=[...allParts].filter(p=>qty(p)<=getWarningLevel(p.part_type)).sort((a,b)=>qty(a)-qty(b));
-document.getElementById("stockResults").innerHTML=low.length?low.map(renderPartCard).join(""):`<div class="card"><h2>No low stock items</h2></div>`;
-}
 
-function showWarningSettings(){
-const partTypes=[...new Set(allParts.map(p=>p.part_type||"Unknown").filter(Boolean))].sort();
-
-document.getElementById("warningSettingsResults").innerHTML=`
-<table>
-<thead>
-<tr><th>Part Type</th><th>Warning Level</th><th>Save</th></tr>
-</thead>
-<tbody>
-${partTypes.map((type,i)=>`
-<tr>
-<td>${type}</td>
-<td><input id="warn-${i}" type="number" value="${getWarningLevel(type)}"></td>
-<td><button onclick="saveWarningRule('${encodeURIComponent(type)}','warn-${i}')">Save</button></td>
-</tr>
-`).join("")}
-</tbody>
-</table>`;
-}
-
-async function saveWarningRule(encodedType,inputId){
-const type=decodeURIComponent(encodedType);
-const level=Number(document.getElementById(inputId).value||DEFAULT_LOW_STOCK_LIMIT);
-const existing=warningRules.find(r=>String(r.part_type||"").toLowerCase()===String(type||"").toLowerCase());
-
-let response;
-
-if(existing){
-response=await fetch(WARNING_API+"?id=eq."+existing.id,{
-method:"PATCH",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify({warning_level:level})
-});
-}else{
-response=await fetch(WARNING_API,{
-method:"POST",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify({part_type:type,warning_level:level})
-});
-}
-
-if(!response.ok){alert(await response.text());return}
-
-alert("Warning level saved");
-await loadWarningRules();
-showWarningSettings();
-showStockWarnings();
-}
-
-function changeQuantityFromEncoded(encoded,newQty,type,job){
-changeQuantity(JSON.parse(decodeURIComponent(encoded)),newQty,type,job);
-}
-
-async function changeQuantity(part,newQty,type="UPDATE",job="",notes=""){
-if(newQty<0)newQty=0;
-
-let url=part.id?TABLE_API+"?id=eq."+part.id:TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
-
-const r=await fetch(url,{
-method:"PATCH",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY,Prefer:"return=representation"},
-body:JSON.stringify({"Quantity":Number(newQty)})
-});
-if(!r.ok){alert(await r.text());return}
-
-const oldQty=qty(part);
-const index=allParts.findIndex(p=>(p.id&&p.id===part.id)||(!p.id&&p.manufacturer_part_number===part.manufacturer_part_number));
-if(index!==-1)allParts[index].quantity=Number(newQty);
-
-await logMovement(part,type,Math.abs(oldQty-newQty),job,notes);
-
-if(selectedMovementPart&&((selectedMovementPart.id&&selectedMovementPart.id===part.id)||selectedMovementPart.manufacturer_part_number===part.manufacturer_part_number)){
-selectedMovementPart.quantity=Number(newQty);
-selectMovementPart(encodeURIComponent(JSON.stringify(selectedMovementPart)));
-}
-
-const search=document.getElementById("search").value.toLowerCase();
-showParts(search?allParts.filter(p=>partMatches(p,search)):allParts);
-showStockWarnings();
-renderBulkTable();
-}
-
-async function logMovement(part,type,amount,job,notes){
-if(!amount)return;
-await fetch(MOVEMENT_API,{
-method:"POST",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify({
-part_id:part.id||null,
-part_name:part.part_name||"",
-manufacturer_part_number:part.manufacturer_part_number||"",
-movement_type:type,
-quantity:Number(amount),
-job_number:job||"",
-notes:notes||""
-})
-});
-}
-
-async function addPart(){
-const newPart={
-"Part Name":document.getElementById("newPartName").value,
-"Supplier Name":document.getElementById("newSupplier").value,
-"Manufacturer Part Number":document.getElementById("newMPN").value,
-"Part Type":document.getElementById("newType").value,
-"Rack":document.getElementById("newRack").value,
-"Shelf":document.getElementById("newShelf").value,
-"Drawer":document.getElementById("newDrawer").value,
-"Quantity":Number(document.getElementById("newQuantity").value||0)
-};
-
-const r=await fetch(TABLE_API,{
-method:"POST",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify(newPart)
-});
-if(!r.ok){alert(await r.text());return}
-alert("Part Added");
-loadParts();
-showPage("searchPage");
-}
-
-function showEditParts(){
-const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
-const list=allParts.filter(p=>partMatches(p,s));
-document.getElementById("editResults").innerHTML=list.map(p=>{
-const id=p.id||"";
-return `
-<div class="card">
-<h2>${p.part_name||""}</h2>
-<input id="epn-${id}" value="${p.part_name||""}" placeholder="Part Name">
-<input id="esup-${id}" value="${p.supplier_name||""}" placeholder="Supplier">
-<input id="empn-${id}" value="${p.manufacturer_part_number||""}" placeholder="MPN">
-<input id="etype-${id}" value="${p.part_type||""}" placeholder="Type">
-<input id="erack-${id}" value="${p.rack||""}" placeholder="Rack">
-<input id="eshelf-${id}" value="${p.shelf||""}" placeholder="Shelf">
-<input id="edrawer-${id}" value="${p.drawer||""}" placeholder="Drawer">
-<input id="eqty-${id}" value="${qty(p)}" placeholder="Quantity">
-<button onclick="saveEdit(${id})">Save Changes</button>
-</div>`;
-}).join("");
-}
-
-async function saveEdit(id){
-const data={
-"Part Name":document.getElementById("epn-"+id).value,
-"Supplier Name":document.getElementById("esup-"+id).value,
-"Manufacturer Part Number":document.getElementById("empn-"+id).value,
-"Part Type":document.getElementById("etype-"+id).value,
-"Rack":document.getElementById("erack-"+id).value,
-"Shelf":document.getElementById("eshelf-"+id).value,
-"Drawer":document.getElementById("edrawer-"+id).value,
-"Quantity":Number(document.getElementById("eqty-"+id).value||0)
-};
-const r=await fetch(TABLE_API+"?id=eq."+id,{method:"PATCH",headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},body:JSON.stringify(data)});
-if(!r.ok){alert(await r.text());return}
-alert("Updated");
-await loadParts();
-showEditParts();
-}
-
-function showMovementSearchResults(){
-const box=document.getElementById("moveSearchResults");
-if(!box)return;
-const s=(document.getElementById("moveSearch")?.value||"").toLowerCase();
-
-if(!s){
-box.innerHTML=`<div class="card"><p>Search for a part to select it.</p></div>`;
-return;
-}
-
-const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
-
-box.innerHTML=matches.length?matches.map(p=>{
-const encoded=encodeURIComponent(JSON.stringify(p));
-const selected=selectedMovementPart&&((selectedMovementPart.id&&selectedMovementPart.id===p.id)||selectedMovementPart.manufacturer_part_number===p.manufacturer_part_number);
-return `
-<div class="${selected?'card selected-stock':'card'}">
-<h2>${p.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${p.part_type||""}</p>
-<p><b>Current Qty:</b> ${qty(p)}</p>
-<button onclick="selectMovementPart('${encoded}')">${selected?'Selected':'Select This Part'}</button>
-</div>`;
-}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
-}
-
-function selectMovementPart(encoded){
-selectedMovementPart=JSON.parse(decodeURIComponent(encoded));
-document.getElementById("selectedMovePart").className="card selected-stock";
-document.getElementById("selectedMovePart").innerHTML=`
-<h2>${selectedMovementPart.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
-<p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
-<p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
-<p class="location">${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}${selectedMovementPart.shelf?" | Shelf "+selectedMovementPart.shelf:""}${selectedMovementPart.drawer?" | Drawer "+selectedMovementPart.drawer:""}</p>`;
-document.getElementById("moveQty").focus();
-showMovementSearchResults();
-}
-
-async function submitMovement(){
-const p=selectedMovementPart;
-const type=document.getElementById("moveType").value;
-const amount=Number(document.getElementById("moveQty").value||0);
-const job=document.getElementById("moveJob").value;
-const notes=document.getElementById("moveNotes").value;
-
-if(!p||!amount){alert("Select a part and quantity");return}
-
-const newQty=type==="IN"?qty(p)+amount:qty(p)-amount;
-await changeQuantity(p,newQty,type,job,notes);
-
-document.getElementById("moveQty").value="";
-document.getElementById("moveJob").value="";
-document.getElementById("moveNotes").value="";
-
-alert("Movement saved");
-}
-
-function showBulkSearchResults(){
-const box=document.getElementById("bulkSearchResults");
-if(!box)return;
-const s=(document.getElementById("bulkSearch")?.value||"").toLowerCase();
-
-if(!s){
-box.innerHTML=`<div class="card"><p>Start typing to search parts.</p></div>`;
-return;
-}
-
-const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
-
-box.innerHTML=matches.length?matches.map(p=>{
-const encoded=encodeURIComponent(JSON.stringify(p));
-return `
-<div class="card">
-<h2>${p.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
-<p><b>Current Qty:</b> ${qty(p)}</p>
-<p class="location">${p.rack?"Rack "+p.rack:""}${p.shelf?" | Shelf "+p.shelf:""}${p.drawer?" | Drawer "+p.drawer:""}</p>
-<button onclick="addToBulkJob('${encoded}')">Add to Job</button>
-</div>`;
-}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
-}
-
-function addToBulkJob(encoded){
-const part=JSON.parse(decodeURIComponent(encoded));
-const exists=bulkItems.find(i=>(i.part.id&&i.part.id===part.id)||i.part.manufacturer_part_number===part.manufacturer_part_number);
-
-if(exists){alert("This part is already in the job table.");return}
-
-bulkItems.push({part:part,amount:1});
-renderBulkTable();
-}
-
-function renderBulkTable(){
-const box=document.getElementById("bulkJobTable");
-if(!box)return;
-
-if(bulkItems.length===0){
-box.innerHTML=`<div class="card"><p>No parts added to this job yet.</p></div>`;
-return;
-}
-
-box.innerHTML=`
-<table>
-<thead>
-<tr><th>Part</th><th>Part Code</th><th>Stock</th><th>Qty Used</th><th>Remove</th></tr>
-</thead>
-<tbody>
-${bulkItems.map((item,i)=>`
-<tr>
-<td>${item.part.part_name||""}</td>
-<td>${item.part.manufacturer_part_number||""}</td>
-<td>${qty(item.part)}</td>
-<td><input type="number" min="1" value="${item.amount}" onchange="updateBulkAmount(${i},this.value)"></td>
-<td><button onclick="removeBulkItem(${i})">Remove</button></td>
-</tr>
-`).join("")}
-</tbody>
-</table>`;
-}
-
-function updateBulkAmount(index,value){bulkItems[index].amount=Number(value||0)}
-function removeBulkItem(index){bulkItems.splice(index,1);renderBulkTable()}
-function clearBulkJob(){bulkItems=[];document.getElementById("bulkSearch").value="";renderBulkTable();showBulkSearchResults()}
-
-async function submitBulkIssue(){
-const job=document.getElementById("bulkJob").value;
-const notes=document.getElementById("bulkNotes").value;
-
-if(!job){alert("Enter a job number");return}
-if(bulkItems.length===0){alert("Add at least one part to the job table.");return}
-
-for(const item of bulkItems){
-const amount=Number(item.amount||0);
-if(amount>0){
-await changeQuantity(item.part,qty(item.part)-amount,"JOB OUT",job,notes);
-}
-}
-
-alert("Bulk job issue saved");
-bulkItems=[];
-document.getElementById("bulkSearch").value="";
-renderBulkTable();
-showPage("historyPage");
-}
-
-async function loadMovements(){
-const r=await fetch(MOVEMENT_API+"?select=*&order=created_at.desc",{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
-movements=await r.json();
-populateHistoryFilters();
-showHistory();
-}
-
-function getPartForMovement(m){
-return allParts.find(p=>
-(p.id&&m.part_id&&p.id===m.part_id)||
-(p.manufacturer_part_number&&m.manufacturer_part_number&&p.manufacturer_part_number===m.manufacturer_part_number)
-)||{};
-}
-
-function populateHistoryFilters(){
-const suppliers=[...new Set(allParts.map(p=>p.supplier_name).filter(Boolean))].sort();
-const types=[...new Set(allParts.map(p=>p.part_type).filter(Boolean))].sort();
-const jobs=[...new Set(movements.map(m=>m.job_number).filter(Boolean))].sort();
-
-document.getElementById("historySupplierFilter").innerHTML=`<option value="">All Suppliers / Manufacturers</option>`+suppliers.map(v=>`<option value="${v}">${v}</option>`).join("");
-document.getElementById("historyPartTypeFilter").innerHTML=`<option value="">All Part Types</option>`+types.map(v=>`<option value="${v}">${v}</option>`).join("");
-document.getElementById("historyJobFilter").innerHTML=`<option value="">All Job Numbers</option>`+jobs.map(v=>`<option value="${v}">${v}</option>`).join("");
-}
-
-function filteredHistoryResults(){
-const search=(document.getElementById("historySearch")?.value||"").toLowerCase();
-const typeFilter=document.getElementById("historyTypeFilter")?.value||"";
-const supplierFilter=document.getElementById("historySupplierFilter")?.value||"";
-const partTypeFilter=document.getElementById("historyPartTypeFilter")?.value||"";
-const jobFilter=document.getElementById("historyJobFilter")?.value||"";
-
-return movements.filter(m=>{
-const p=getPartForMovement(m);
-const combined={...m,supplier_name:p.supplier_name||"",part_type:p.part_type||"",rack:p.rack||"",shelf:p.shelf||"",drawer:p.drawer||""};
-
-if(search&&!JSON.stringify(combined).toLowerCase().includes(search))return false;
-if(typeFilter&&m.movement_type!==typeFilter)return false;
-if(supplierFilter&&p.supplier_name!==supplierFilter)return false;
-if(partTypeFilter&&p.part_type!==partTypeFilter)return false;
-if(jobFilter&&m.job_number!==jobFilter)return false;
-
-return true;
-});
-}
-
-function showHistory(){
-const list=filteredHistoryResults();
-
-document.getElementById("historyResults").innerHTML=list.map(m=>{
-const p=getPartForMovement(m);
-return `
-<div class="card">
-<h2>${m.part_name||""}</h2>
-<p><b>Part Code:</b> ${m.manufacturer_part_number||""}</p>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Type:</b> ${p.part_type||""}</p>
-<p><b>Movement:</b> ${m.movement_type||""}</p>
-<p><b>Quantity:</b> ${m.quantity||""}</p>
-<p><b>Job:</b> ${m.job_number||""}</p>
-<p><b>Notes:</b> ${m.notes||""}</p>
-<p class="location">${p.rack?"Rack "+p.rack:""}${p.shelf?" | Shelf "+p.shelf:""}${p.drawer?" | Drawer "+p.drawer:""}</p>
-<p class="small">${m.created_at||""}</p>
-</div>`;
-}).join("");
-}
-
-function clearHistoryFilters(){
-document.getElementById("historySearch").value="";
-document.getElementById("historyTypeFilter").value="";
-document.getElementById("historySupplierFilter").value="";
-document.getElementById("historyPartTypeFilter").value="";
-document.getElementById("historyJobFilter").value="";
-showHistory();
-}
-
-function exportHistoryToExcel(){
-const filtered=filteredHistoryResults();
-
-let csv="Date,Part Name,Part Code,Supplier,Part Type,Movement,Quantity,Job Number,Notes,Rack,Shelf,Drawer\n";
-
-filtered.forEach(m=>{
-const p=getPartForMovement(m);
-csv += [
-m.created_at||"",
-m.part_name||"",
-m.manufacturer_part_number||"",
-p.supplier_name||"",
-p.part_type||"",
-m.movement_type||"",
-m.quantity||"",
-m.job_number||"",
-m.notes||"",
-p.rack||"",
-p.shelf||"",
-p.drawer||""
-].map(value=>`"${String(value).replace(/"/g,'""')}"`).join(",")+"\n";
-});
-
-const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-const link=document.createElement("a");
-link.href=URL.createObjectURL(blob);
-link.download="stock_movement_history.csv";
-link.click();
-}
-
-function clearHighlights(){document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"))}
-function extractNumber(v){const m=String(v||"").match(/\d+/);return m?m[0]:""}
-
-function showMap(rack,shelf,drawer){
-showPage("mapPage");
-clearHighlights();
-const rackNum=extractNumber(rack);
-const shelfNum=extractNumber(shelf);
-const drawerRaw=String(drawer||"").trim();
-const drawerText=drawerRaw.toLowerCase();
-const drawerNum=extractNumber(drawerText);
-
-document.getElementById("selectedInfo").innerHTML=`<div class="card"><b>Selected Location</b><br>${rackNum?"Rack "+rackNum+" ":""}${shelfNum?"Shelf "+shelfNum+" ":""}${drawerRaw?"Drawer "+drawerRaw:""}</div>`;
-
-document.getElementById("rack-"+rackNum)?.classList.add("highlight");
-document.getElementById("shelf-"+shelfNum)?.classList.add("highlight");
-
-if(drawerText.startsWith("l")&&drawerNum){
-document.getElementById("left-drawer-main")?.classList.add("highlight");
-document.getElementById("left-drawer-"+drawerNum)?.classList.add("highlight");
-}
-if(drawerText.startsWith("r")&&drawerNum){
-document.getElementById("right-drawer-main")?.classList.add("highlight");
-document.getElementById("right-drawer-"+drawerNum)?.classList.add("highlight");
-}
+const low=[...allParts]
+.filter(p=>qty(p)<=getWarningLevel(p.part_type))
+.sort((a,b)=>qty(a)-qty(b));
+
+document.getElementById("stockResults").innerHTML=
+low.length
+? low.map(renderPartCard).join("")
+: `<div class="card"><h2>No low stock items</h2></div>`;
 }
 
 loadParts();
+
 </script>
 
 </body>
