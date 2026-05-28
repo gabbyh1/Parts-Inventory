@@ -1,406 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Electrical Parts</title>
 
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#0a0a0a;
-color:white;
-overflow-x:hidden;
-}
-
-header{
-background:#111;
-border-bottom:4px solid #cc0000;
-padding:12px;
-position:sticky;
-top:0;
-z-index:1000;
-}
-
-h1{
-margin:0;
-color:#ff2b2b;
-font-size:26px;
-}
-
-nav{
-margin-top:10px;
-}
-
-nav button{
-background:#cc0000;
-border:none;
-color:white;
-padding:11px;
-margin:4px;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-}
-
-.page{
-display:none;
-padding:12px;
-}
-
-.active{
-display:block;
-}
-
-input{
-width:100%;
-padding:16px;
-font-size:18px;
-border:none;
-border-radius:10px;
-margin-bottom:15px;
-box-sizing:border-box;
-}
-
-.card{
-background:#161616;
-border-left:6px solid #cc0000;
-padding:14px;
-margin-bottom:12px;
-border-radius:12px;
-}
-
-.card h2{
-margin-top:0;
-color:#ff4d4d;
-}
-
-.location{
-color:#00ff88;
-font-weight:bold;
-}
-
-.qty{
-font-size:20px;
-font-weight:bold;
-color:white;
-}
-
-.low{
-border-left-color:#ffcc00;
-}
-
-.critical{
-border-left-color:#ff0000;
-}
-
-.card button,
-.add-form button{
-background:#cc0000;
-border:none;
-color:white;
-padding:10px 14px;
-border-radius:8px;
-font-weight:bold;
-margin:5px 4px 0 0;
-cursor:pointer;
-}
-
-.qty-btn{
-font-size:20px;
-width:42px;
-}
-
-.map-wrap{
-width:100%;
-display:flex;
-justify-content:center;
-align-items:flex-start;
-overflow:hidden;
-}
-
-.map-container{
-display:flex;
-gap:20px;
-align-items:flex-start;
-transform-origin:top center;
-}
-
-.workshop{
-width:720px;
-height:560px;
-background:#efefef;
-border:4px solid black;
-position:relative;
-flex-shrink:0;
-}
-
-.box{
-position:absolute;
-border:2px solid black;
-background:#dce6f2;
-display:flex;
-justify-content:center;
-align-items:center;
-text-align:center;
-color:black;
-font-weight:bold;
-font-size:14px;
-transition:0.3s;
-}
-
-.highlight{
-background:#00ff55 !important;
-box-shadow:0 0 25px #00ff55;
-animation:flash 1s infinite;
-}
-
-@keyframes flash{
-0%{opacity:1}
-50%{opacity:.45}
-100%{opacity:1}
-}
-
-.side-panel{
-display:flex;
-flex-direction:column;
-gap:18px;
-width:260px;
-flex-shrink:0;
-}
-
-.shelf-box{
-background:#dce6f2;
-border:2px solid black;
-color:black;
-}
-
-.shelf-title{
-background:#2d65b3;
-color:white;
-text-align:center;
-padding:8px;
-font-weight:bold;
-}
-
-.shelf,
-.drawer-row{
-border-top:1px solid black;
-padding:8px;
-text-align:center;
-transition:0.3s;
-}
+body{margin:0;font-family:Arial;background:#0a0a0a;color:white;overflow-x:hidden}
+header{background:#111;border-bottom:4px solid #cc0000;padding:12px;position:sticky;top:0;z-index:1000}
+h1{margin:0;color:#ff2b2b;font-size:26px}
+nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+nav button{background:#cc0000;border:none;color:white;padding:10px;border-radius:10px;font-weight:bold;cursor:pointer}
+.page{display:none;padding:12px}.active{display:block}
+input,select,textarea{width:100%;padding:14px;font-size:16px;border:none;border-radius:10px;margin-bottom:12px;box-sizing:border-box}
+textarea{min-height:80px}
+.card{background:#161616;border-left:6px solid #cc0000;padding:14px;margin-bottom:12px;border-radius:12px}
+.card h2{margin-top:0;color:#ff4d4d}
+.location{color:#00ff88;font-weight:bold}
+.qty{font-size:20px;font-weight:bold;color:white}
+.low{border-left-color:#ffcc00}.critical{border-left-color:#ff0000}
+button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radius:8px;font-weight:bold;margin:5px 4px 0 0;cursor:pointer}
+.qty-btn{font-size:20px;width:42px}
+.small{font-size:13px;color:#ccc}
+.map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
+.map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
+.workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
+.box{position:absolute;border:2px solid black;background:#dce6f2;display:flex;justify-content:center;align-items:center;text-align:center;color:black;font-weight:bold;font-size:14px}
+.highlight{background:#00ff55!important;box-shadow:0 0 25px #00ff55;animation:flash 1s infinite}
+@keyframes flash{0%{opacity:1}50%{opacity:.45}100%{opacity:1}}
+.side-panel{display:flex;flex-direction:column;gap:18px;width:260px;flex-shrink:0}
+.shelf-box{background:#dce6f2;border:2px solid black;color:black}
+.shelf-title{background:#2d65b3;color:white;text-align:center;padding:8px;font-weight:bold}
+.shelf,.drawer-row{border-top:1px solid black;padding:8px;text-align:center}
 
 @media(max-width:700px){
-
-html, body{
-overflow-x:hidden;
-overflow-y:auto;
+html,body{overflow-x:hidden;overflow-y:auto}
+h1{font-size:18px}
+header{padding:8px}
+nav{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+nav button{font-size:11px;padding:8px 4px;margin:0}
+.page{padding:8px}
+body.map-mode{overflow:hidden;height:100vh}
+body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
+#mapPage h2{display:none}
+.map-wrap{height:calc(100vh - 118px);overflow:hidden}
+.map-container{transform:scale(.31);transform-origin:top center}
+.card{padding:10px;font-size:14px}.card h2{font-size:18px}
 }
-
-h1{
-font-size:18px;
-}
-
-header{
-padding:8px;
-}
-
-nav{
-margin-top:6px;
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:4px;
-}
-
-nav button{
-font-size:11px;
-padding:8px 4px;
-margin:0;
-border-radius:6px;
-}
-
-.page{
-padding:8px;
-}
-
-#searchPage,
-#addPage,
-#stockPage{
-height:auto;
-overflow-y:auto;
-}
-
-body.map-mode{
-overflow:hidden;
-height:100vh;
-}
-
-body.map-mode #mapPage{
-height:calc(100vh - 76px);
-overflow:hidden;
-padding:4px;
-}
-
-#mapPage h2{
-display:none;
-}
-
-.map-wrap{
-height:calc(100vh - 118px);
-overflow:hidden;
-display:flex;
-justify-content:center;
-align-items:flex-start;
-}
-
-.map-container{
-transform:scale(0.31);
-transform-origin:top center;
-}
-
-}
-
 </style>
-
 </head>
 
 <body>
 
 <header>
-
 <h1>Electrical Parts</h1>
-
 <nav>
-
-<button onclick="showPage('searchPage')">
-Search
-</button>
-
-<button onclick="showPage('addPage')">
-Add Part
-</button>
-
-<button onclick="showPage('stockPage')">
-Stock Warnings
-</button>
-
-<button onclick="showPage('mapPage')">
-Map
-</button>
-
+<button onclick="showPage('searchPage')">Search</button>
+<button onclick="showPage('addPage')">Add Part</button>
+<button onclick="showPage('editPage')">Edit Parts</button>
+<button onclick="showPage('stockPage')">Stock Warnings</button>
+<button onclick="showPage('movementPage')">Stock In / Out</button>
+<button onclick="showPage('bulkPage')">Bulk Job Issue</button>
+<button onclick="showPage('historyPage')">Usage History</button>
+<button onclick="showPage('mapPage')">Map</button>
 </nav>
-
 </header>
 
 <div id="searchPage" class="page active">
-
-<input
-id="search"
-placeholder="Search parts..."
-oninput="searchParts()">
-
+<input id="search" placeholder="Search parts..." oninput="searchParts()">
 <div id="results"></div>
-
 </div>
 
 <div id="addPage" class="page">
-
 <h2>Add New Part</h2>
-
-<div class="add-form">
-
 <input id="newPartName" placeholder="Part Name">
 <input id="newSupplier" placeholder="Supplier">
 <input id="newMPN" placeholder="Manufacturer Part Number">
 <input id="newType" placeholder="Part Type">
 <input id="newRack" placeholder="Rack">
 <input id="newShelf" placeholder="Shelf">
-<input id="newDrawer" placeholder="Drawer">
+<input id="newDrawer" placeholder="Drawer e.g. L1 or R5">
 <input id="newQuantity" placeholder="Quantity">
-
-<button onclick="addPart()">
-Add Part
-</button>
-
+<button onclick="addPart()">Add Part</button>
 </div>
 
+<div id="editPage" class="page">
+<h2>Edit Existing Parts</h2>
+<input id="editSearch" placeholder="Search part to edit..." oninput="showEditParts()">
+<div id="editResults"></div>
 </div>
 
 <div id="stockPage" class="page">
-
 <h2>Stock Warnings</h2>
-
+<p>Low stock is quantity 2 or below.</p>
 <div id="stockResults"></div>
+</div>
 
+<div id="movementPage" class="page">
+<h2>Stock In / Out</h2>
+<select id="movePart"></select>
+<select id="moveType">
+<option value="IN">Stock In</option>
+<option value="OUT">Stock Out</option>
+</select>
+<input id="moveQty" type="number" placeholder="Quantity">
+<input id="moveJob" placeholder="Job Number / Reference">
+<textarea id="moveNotes" placeholder="Notes"></textarea>
+<button onclick="submitMovement()">Submit Movement</button>
+</div>
+
+<div id="bulkPage" class="page">
+<h2>Bulk Job Issue</h2>
+<p class="small">Use this when taking multiple parts out for one job.</p>
+<input id="bulkJob" placeholder="Job Number">
+<textarea id="bulkNotes" placeholder="Job notes"></textarea>
+<div id="bulkList"></div>
+<button onclick="submitBulkIssue()">Submit Bulk Issue</button>
+</div>
+
+<div id="historyPage" class="page">
+<h2>Stock Movement / Job History</h2>
+<input id="historySearch" placeholder="Search by part, MPN, or job number..." oninput="showHistory()">
+<div id="historyResults"></div>
 </div>
 
 <div id="mapPage" class="page">
-
 <div id="selectedInfo"></div>
-
 <div class="map-wrap">
-
 <div class="map-container">
 
 <div class="workshop">
-
 <div class="box" id="rack-13" style="top:30px;left:30px;width:200px;height:55px">Rack 13</div>
 <div class="box" id="rack-14" style="top:30px;left:230px;width:200px;height:55px">Rack 14</div>
 <div class="box" id="rack-15" style="top:30px;left:430px;width:200px;height:55px">Rack 15</div>
-
 <div class="box" id="rack-16" style="top:85px;left:30px;width:200px;height:55px">Rack 16</div>
 <div class="box" id="rack-17" style="top:85px;left:230px;width:200px;height:55px">Rack 17</div>
 <div class="box" id="rack-18" style="top:85px;left:430px;width:200px;height:55px">Rack 18</div>
-
 <div class="box" id="right-drawer-main" style="top:190px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Right Drawer</div>
-
 <div class="box" id="left-drawer-main" style="top:350px;left:0;width:55px;height:130px;writing-mode:vertical-rl">Left Drawer</div>
-
-<div class="box" style="top:310px;left:150px;width:280px;height:100px;background:#ddd9cf">
-Bench
-</div>
-
+<div class="box" style="top:310px;left:150px;width:280px;height:100px;background:#ddd9cf">Bench</div>
 <div class="box" style="top:410px;left:320px;width:110px;height:120px;background:#ddd9cf"></div>
-
-<div class="box" id="cupboard-1" style="bottom:40px;left:40px;width:220px;height:55px">
-Cupboard 1
-</div>
-
-<div class="box" id="rack-19" style="bottom:40px;right:50px;width:220px;height:55px">
-Rack 19
-</div>
-
+<div class="box" id="cupboard-1" style="bottom:40px;left:40px;width:220px;height:55px">Cupboard 1</div>
+<div class="box" id="rack-19" style="bottom:40px;right:50px;width:220px;height:55px">Rack 19</div>
 </div>
 
 <div class="side-panel">
-
 <div class="shelf-box">
-
-<div class="shelf-title">
-Rack Shelves
-</div>
-
+<div class="shelf-title">Rack Shelves</div>
 <div class="shelf" id="shelf-1">Shelf 1</div>
 <div class="shelf" id="shelf-2">Shelf 2</div>
 <div class="shelf" id="shelf-3">Shelf 3</div>
 <div class="shelf" id="shelf-4">Shelf 4</div>
 <div class="shelf" id="shelf-5">Shelf 5</div>
 <div class="shelf" id="shelf-6">Shelf 6</div>
-
 </div>
 
 <div class="shelf-box">
-
-<div class="shelf-title">
-Left Drawer
-</div>
-
+<div class="shelf-title">Left Drawer</div>
 <div class="drawer-row" id="left-drawer-1">L1</div>
 <div class="drawer-row" id="left-drawer-2">L2</div>
 <div class="drawer-row" id="left-drawer-3">L3</div>
@@ -408,15 +164,10 @@ Left Drawer
 <div class="drawer-row" id="left-drawer-5">L5</div>
 <div class="drawer-row" id="left-drawer-6">L6</div>
 <div class="drawer-row" id="left-drawer-7">L7</div>
-
 </div>
 
 <div class="shelf-box">
-
-<div class="shelf-title">
-Right Drawer
-</div>
-
+<div class="shelf-title">Right Drawer</div>
 <div class="drawer-row" id="right-drawer-1">R1</div>
 <div class="drawer-row" id="right-drawer-2">R2</div>
 <div class="drawer-row" id="right-drawer-3">R3</div>
@@ -424,512 +175,267 @@ Right Drawer
 <div class="drawer-row" id="right-drawer-5">R5</div>
 <div class="drawer-row" id="right-drawer-6">R6</div>
 <div class="drawer-row" id="right-drawer-7">R7</div>
-
+</div>
 </div>
 
 </div>
-
 </div>
-
-</div>
-
 </div>
 
 <script>
-
 const API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/parts_public";
-
 const TABLE_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/Parts";
-
+const MOVEMENT_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_movements";
 const API_KEY="sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
-
 const LOW_STOCK_LIMIT=2;
 
 let allParts=[];
+let movements=[];
 
 function showPage(page){
-
-document.querySelectorAll(".page")
-.forEach(p=>p.classList.remove("active"));
-
-document.getElementById(page)
-.classList.add("active");
-
-if(page==="mapPage"){
-document.body.classList.add("map-mode");
-}else{
-document.body.classList.remove("map-mode");
-}
-
-if(page==="stockPage"){
-showStockWarnings();
-}
-
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.getElementById(page).classList.add("active");
+document.body.classList.toggle("map-mode",page==="mapPage");
+if(page==="editPage")showEditParts();
+if(page==="stockPage")showStockWarnings();
+if(page==="movementPage")populateMovementParts();
+if(page==="bulkPage")showBulkList();
+if(page==="historyPage"){loadMovements();}
 }
 
 async function loadParts(){
-
-const response=await fetch(API,{
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-}
-});
-
-allParts=await response.json();
-
+const r=await fetch(API,{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+allParts=await r.json();
 showParts(allParts);
-
 showStockWarnings();
-
+populateMovementParts();
+showBulkList();
 }
+
+function qty(p){return Number(p.quantity||0)}
+function cardClass(p){if(qty(p)<=0)return"card critical";if(qty(p)<=LOW_STOCK_LIMIT)return"card low";return"card"}
 
 function searchParts(){
-
-const search=
-document.getElementById("search")
-.value
-.toLowerCase();
-
-showParts(
-
-allParts.filter(part=>
-
-JSON.stringify(part)
-.toLowerCase()
-.includes(search)
-
-)
-
-);
-
-}
-
-function qty(part){
-
-return Number(part.quantity || 0);
-
-}
-
-function cardClass(part){
-
-if(qty(part)<=0){
-return "card critical";
-}
-
-if(qty(part)<=LOW_STOCK_LIMIT){
-return "card low";
-}
-
-return "card";
-
+const s=document.getElementById("search").value.toLowerCase();
+showParts(allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s)));
 }
 
 function renderPartCard(part){
-
-const encodedPart =
-encodeURIComponent(
-JSON.stringify(part)
-);
-
+const encoded=encodeURIComponent(JSON.stringify(part));
 return `
-
 <div class="${cardClass(part)}">
-
-<h2>${part.part_name || ""}</h2>
-
-<p><b>Supplier:</b> ${part.supplier_name || ""}</p>
-
-<p><b>Part Number:</b>
-${part.manufacturer_part_number || ""}
-</p>
-
-<p><b>Type:</b>
-${part.part_type || ""}
-</p>
-
-<p class="qty">
-
-<b>Quantity:</b>
-
-${qty(part)}
-
-</p>
-
-<button
-class="qty-btn"
-onclick="changeQuantityFromEncoded('${encodedPart}', ${qty(part)-1})">
--
-</button>
-
-<button
-class="qty-btn"
-onclick="changeQuantityFromEncoded('${encodedPart}', ${qty(part)+1})">
-+
-</button>
-
-<p class="location">
-
-${part.rack ? "Rack " + part.rack : ""}
-
-${part.shelf ? " | Shelf " + part.shelf : ""}
-
-${part.drawer ? " | Drawer " + part.drawer : ""}
-
-</p>
-
-<button onclick='showMap(
-${JSON.stringify(part.rack || "")},
-${JSON.stringify(part.shelf || "")},
-${JSON.stringify(part.drawer || "")}
-)'>
-
-View Location on Map
-
-</button>
-
-</div>
-
-`;
-
+<h2>${part.part_name||""}</h2>
+<p><b>Supplier:</b> ${part.supplier_name||""}</p>
+<p><b>Part Number:</b> ${part.manufacturer_part_number||""}</p>
+<p><b>Type:</b> ${part.part_type||""}</p>
+<p class="qty"><b>Quantity:</b> ${qty(part)}</p>
+<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
+<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)+1},'MANUAL IN','')">+</button>
+<p class="location">${part.rack?"Rack "+part.rack:""}${part.shelf?" | Shelf "+part.shelf:""}${part.drawer?" | Drawer "+part.drawer:""}</p>
+<button onclick='showMap(${JSON.stringify(part.rack||"")},${JSON.stringify(part.shelf||"")},${JSON.stringify(part.drawer||"")})'>View Location on Map</button>
+</div>`;
 }
 
-function showParts(parts){
-
-document.getElementById("results").innerHTML=
-
-parts.map(renderPartCard)
-.join("");
-
-}
+function showParts(parts){document.getElementById("results").innerHTML=parts.map(renderPartCard).join("")}
 
 function showStockWarnings(){
-
-const low=[...allParts]
-
-.filter(part=>
-
-qty(part)<=LOW_STOCK_LIMIT
-
-);
-
-document.getElementById("stockResults").innerHTML=
-
-low.length
-
-?
-
-low.map(renderPartCard)
-.join("")
-
-:
-
-`<div class="card">
-<h2>No low stock items</h2>
-</div>`;
-
+const low=[...allParts].filter(p=>qty(p)<=LOW_STOCK_LIMIT).sort((a,b)=>qty(a)-qty(b));
+document.getElementById("stockResults").innerHTML=low.length?low.map(renderPartCard).join(""):`<div class="card"><h2>No low stock items</h2></div>`;
 }
 
-function changeQuantityFromEncoded(
-encodedPart,
-newQty
-){
-
-const part=
-JSON.parse(
-decodeURIComponent(encodedPart)
-);
-
-changeQuantity(part,newQty);
-
+function changeQuantityFromEncoded(encoded,newQty,type,job){
+changeQuantity(JSON.parse(decodeURIComponent(encoded)),newQty,type,job);
 }
 
-async function changeQuantity(
-part,
-newQty
-){
+async function changeQuantity(part,newQty,type="UPDATE",job="",notes=""){
+if(newQty<0)newQty=0;
+let url=part.id?TABLE_API+"?id=eq."+part.id:TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
 
-if(newQty < 0){
-newQty = 0;
-}
-
-let updateUrl = "";
-
-if(part.id){
-
-updateUrl =
-TABLE_API + "?id=eq." + part.id;
-
-}else{
-
-updateUrl =
-TABLE_API +
-"?Manufacturer%20Part%20Number=eq." +
-encodeURIComponent(
-part.manufacturer_part_number
-);
-
-}
-
-const response = await fetch(updateUrl,{
-
+const r=await fetch(url,{
 method:"PATCH",
-
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer " + API_KEY,
-Prefer:"return=representation"
-},
-
-body:JSON.stringify({
-"Quantity":Number(newQty)
-})
-
+headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY,Prefer:"return=representation"},
+body:JSON.stringify({"Quantity":Number(newQty)})
 });
+if(!r.ok){alert(await r.text());return}
 
-if(!response.ok){
+const index=allParts.findIndex(p=>(p.id&&p.id===part.id)||(!p.id&&p.manufacturer_part_number===part.manufacturer_part_number));
+if(index!==-1)allParts[index].quantity=Number(newQty);
 
-alert(
-await response.text()
-);
+await logMovement(part,type,Math.abs(qty(part)-newQty),job,notes);
 
-return;
-
-}
-
-/* UPDATE LOCAL DATA */
-
-const index =
-allParts.findIndex(p =>
-
-(p.id && p.id === part.id)
-
-||
-
-(
-
-!p.id &&
-
-p.manufacturer_part_number ===
-part.manufacturer_part_number
-
-)
-
-);
-
-if(index !== -1){
-
-allParts[index].quantity =
-Number(newQty);
-
-}
-
-const currentSearch =
-
-document.getElementById("search")
-.value
-.toLowerCase();
-
-if(currentSearch){
-
-showParts(
-
-allParts.filter(part=>
-
-JSON.stringify(part)
-.toLowerCase()
-.includes(currentSearch)
-
-)
-
-);
-
-}else{
-
-showParts(allParts);
-
-}
-
+const search=document.getElementById("search").value.toLowerCase();
+showParts(search?allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(search)):allParts);
 showStockWarnings();
-
+showBulkList();
 }
 
-function clearHighlights(){
-
-document.querySelectorAll(".highlight")
-.forEach(e=>
-e.classList.remove("highlight")
-);
-
-}
-
-function extractNumber(value){
-
-const match=
-String(value || "")
-.match(/\d+/);
-
-return match ? match[0] : "";
-
-}
-
-function showMap(
-rack,
-shelf,
-drawer
-){
-
-showPage("mapPage");
-
-clearHighlights();
-
-const rackNum=
-extractNumber(rack);
-
-const shelfNum=
-extractNumber(shelf);
-
-const drawerRaw=
-String(drawer || "")
-.trim();
-
-const drawerText=
-drawerRaw.toLowerCase();
-
-const drawerNum=
-extractNumber(drawerText);
-
-document.getElementById("selectedInfo").innerHTML=
-
-`<div class="card">
-
-<b>Selected Location</b><br>
-
-${rackNum ? "Rack " + rackNum + " " : ""}
-
-${shelfNum ? "Shelf " + shelfNum + " " : ""}
-
-${drawerRaw ? "Drawer " + drawerRaw : ""}
-
-</div>`;
-
-const rackEl=
-document.getElementById(
-"rack-"+rackNum
-);
-
-const shelfEl=
-document.getElementById(
-"shelf-"+shelfNum
-);
-
-if(rackEl){
-rackEl.classList.add("highlight");
-}
-
-if(shelfEl){
-shelfEl.classList.add("highlight");
-}
-
-if(
-drawerText.startsWith("l")
-&& drawerNum
-){
-
-document.getElementById(
-"left-drawer-main"
-).classList.add("highlight");
-
-document.getElementById(
-"left-drawer-"+drawerNum
-)?.classList.add("highlight");
-
-}
-
-if(
-drawerText.startsWith("r")
-&& drawerNum
-){
-
-document.getElementById(
-"right-drawer-main"
-).classList.add("highlight");
-
-document.getElementById(
-"right-drawer-"+drawerNum
-)?.classList.add("highlight");
-
-}
-
+async function logMovement(part,type,amount,job,notes){
+if(!amount)return;
+await fetch(MOVEMENT_API,{
+method:"POST",
+headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
+body:JSON.stringify({
+part_id:part.id||null,
+part_name:part.part_name||"",
+manufacturer_part_number:part.manufacturer_part_number||"",
+movement_type:type,
+quantity:Number(amount),
+job_number:job||"",
+notes:notes||""
+})
+});
 }
 
 async function addPart(){
-
 const newPart={
-
-"Part Name":
-document.getElementById("newPartName").value,
-
-"Supplier Name":
-document.getElementById("newSupplier").value,
-
-"Manufacturer Part Number":
-document.getElementById("newMPN").value,
-
-"Part Type":
-document.getElementById("newType").value,
-
-"Rack":
-document.getElementById("newRack").value,
-
-"Shelf":
-document.getElementById("newShelf").value,
-
-"Drawer":
-document.getElementById("newDrawer").value,
-
-"Quantity":
-Number(
-document.getElementById("newQuantity").value || 0
-)
-
+"Part Name":document.getElementById("newPartName").value,
+"Supplier Name":document.getElementById("newSupplier").value,
+"Manufacturer Part Number":document.getElementById("newMPN").value,
+"Part Type":document.getElementById("newType").value,
+"Rack":document.getElementById("newRack").value,
+"Shelf":document.getElementById("newShelf").value,
+"Drawer":document.getElementById("newDrawer").value,
+"Quantity":Number(document.getElementById("newQuantity").value||0)
 };
-
-const response=await fetch(TABLE_API,{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-},
-
-body:JSON.stringify(newPart)
-
-});
-
-if(!response.ok){
-
-alert(
-await response.text()
-);
-
-return;
-
-}
-
+const r=await fetch(TABLE_API,{method:"POST",headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},body:JSON.stringify(newPart)});
+if(!r.ok){alert(await r.text());return}
 alert("Part Added");
-
 loadParts();
-
 showPage("searchPage");
+}
 
+function showEditParts(){
+const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
+const list=allParts.filter(p=>JSON.stringify(p).toLowerCase().includes(s));
+document.getElementById("editResults").innerHTML=list.map(p=>{
+const id=p.id||"";
+return `
+<div class="card">
+<h2>${p.part_name||""}</h2>
+<input id="epn-${id}" value="${p.part_name||""}" placeholder="Part Name">
+<input id="esup-${id}" value="${p.supplier_name||""}" placeholder="Supplier">
+<input id="empn-${id}" value="${p.manufacturer_part_number||""}" placeholder="MPN">
+<input id="etype-${id}" value="${p.part_type||""}" placeholder="Type">
+<input id="erack-${id}" value="${p.rack||""}" placeholder="Rack">
+<input id="eshelf-${id}" value="${p.shelf||""}" placeholder="Shelf">
+<input id="edrawer-${id}" value="${p.drawer||""}" placeholder="Drawer">
+<input id="eqty-${id}" value="${qty(p)}" placeholder="Quantity">
+<button onclick="saveEdit(${id})">Save Changes</button>
+</div>`;
+}).join("");
+}
+
+async function saveEdit(id){
+const data={
+"Part Name":document.getElementById("epn-"+id).value,
+"Supplier Name":document.getElementById("esup-"+id).value,
+"Manufacturer Part Number":document.getElementById("empn-"+id).value,
+"Part Type":document.getElementById("etype-"+id).value,
+"Rack":document.getElementById("erack-"+id).value,
+"Shelf":document.getElementById("eshelf-"+id).value,
+"Drawer":document.getElementById("edrawer-"+id).value,
+"Quantity":Number(document.getElementById("eqty-"+id).value||0)
+};
+const r=await fetch(TABLE_API+"?id=eq."+id,{method:"PATCH",headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},body:JSON.stringify(data)});
+if(!r.ok){alert(await r.text());return}
+alert("Updated");
+await loadParts();
+showEditParts();
+}
+
+function populateMovementParts(){
+const sel=document.getElementById("movePart");
+if(!sel)return;
+sel.innerHTML=allParts.map((p,i)=>`<option value="${i}">${p.part_name} | ${p.manufacturer_part_number} | Qty ${qty(p)}</option>`).join("");
+}
+
+async function submitMovement(){
+const p=allParts[Number(document.getElementById("movePart").value)];
+const type=document.getElementById("moveType").value;
+const amount=Number(document.getElementById("moveQty").value||0);
+const job=document.getElementById("moveJob").value;
+const notes=document.getElementById("moveNotes").value;
+if(!p||!amount){alert("Select a part and quantity");return}
+const newQty=type==="IN"?qty(p)+amount:qty(p)-amount;
+await changeQuantity(p,newQty,type,job,notes);
+alert("Movement saved");
+}
+
+function showBulkList(){
+const box=document.getElementById("bulkList");
+if(!box)return;
+box.innerHTML=allParts.map((p,i)=>`
+<div class="card">
+<b>${p.part_name||""}</b><br>
+<span class="small">${p.manufacturer_part_number||""} | Current Qty: ${qty(p)}</span>
+<input id="bulk-${i}" type="number" placeholder="Qty used for job">
+</div>`).join("");
+}
+
+async function submitBulkIssue(){
+const job=document.getElementById("bulkJob").value;
+const notes=document.getElementById("bulkNotes").value;
+if(!job){alert("Enter a job number");return}
+
+for(let i=0;i<allParts.length;i++){
+const amount=Number(document.getElementById("bulk-"+i)?.value||0);
+if(amount>0){
+await changeQuantity(allParts[i],qty(allParts[i])-amount,"JOB OUT",job,notes);
+}
+}
+alert("Bulk job issue saved");
+showPage("historyPage");
+}
+
+async function loadMovements(){
+const r=await fetch(MOVEMENT_API+"?select=*&order=created_at.desc",{headers:{apikey:API_KEY,Authorization:"Bearer "+API_KEY}});
+movements=await r.json();
+showHistory();
+}
+
+function showHistory(){
+const s=(document.getElementById("historySearch")?.value||"").toLowerCase();
+const list=movements.filter(m=>JSON.stringify(m).toLowerCase().includes(s));
+document.getElementById("historyResults").innerHTML=list.map(m=>`
+<div class="card">
+<h2>${m.part_name||""}</h2>
+<p><b>MPN:</b> ${m.manufacturer_part_number||""}</p>
+<p><b>Movement:</b> ${m.movement_type||""}</p>
+<p><b>Quantity:</b> ${m.quantity||""}</p>
+<p><b>Job:</b> ${m.job_number||""}</p>
+<p><b>Notes:</b> ${m.notes||""}</p>
+<p class="small">${m.created_at||""}</p>
+</div>`).join("");
+}
+
+function clearHighlights(){document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"))}
+function extractNumber(v){const m=String(v||"").match(/\d+/);return m?m[0]:""}
+
+function showMap(rack,shelf,drawer){
+showPage("mapPage");
+clearHighlights();
+const rackNum=extractNumber(rack);
+const shelfNum=extractNumber(shelf);
+const drawerRaw=String(drawer||"").trim();
+const drawerText=drawerRaw.toLowerCase();
+const drawerNum=extractNumber(drawerText);
+
+document.getElementById("selectedInfo").innerHTML=`<div class="card"><b>Selected Location</b><br>${rackNum?"Rack "+rackNum+" ":""}${shelfNum?"Shelf "+shelfNum+" ":""}${drawerRaw?"Drawer "+drawerRaw:""}</div>`;
+
+document.getElementById("rack-"+rackNum)?.classList.add("highlight");
+document.getElementById("shelf-"+shelfNum)?.classList.add("highlight");
+
+if(drawerText.startsWith("l")&&drawerNum){
+document.getElementById("left-drawer-main")?.classList.add("highlight");
+document.getElementById("left-drawer-"+drawerNum)?.classList.add("highlight");
+}
+if(drawerText.startsWith("r")&&drawerNum){
+document.getElementById("right-drawer-main")?.classList.add("highlight");
+document.getElementById("right-drawer-"+drawerNum)?.classList.add("highlight");
+}
 }
 
 loadParts();
-
 </script>
 
 </body>
