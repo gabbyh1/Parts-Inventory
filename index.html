@@ -834,7 +834,7 @@ ${bulkItems.map((item,i)=>`
 <td>${item.part.part_name||""}</td>
 <td>${item.part.manufacturer_part_number||""}</td>
 <td>${qty(item.part)}</td>
-<td><input type="number" min="1" value="${item.amount}" onchange="updateBulkAmount(${i},this.value)"></td>
+<td><input id="bulkAmount-${i}" type="number" min="1" value="${item.amount}" oninput="updateBulkAmount(${i},this.value)"></td>
 <td><button onclick="removeBulkItem(${i})">Remove</button></td>
 </tr>
 `).join("")}
@@ -859,7 +859,7 @@ showBulkSearchResults();
 }
 
 async function submitBulkIssue(){
-const job=document.getElementById("bulkJob").value;
+const job=document.getElementById("bulkJob").value.trim();
 const notes=document.getElementById("bulkNotes").value;
 
 if(!job){
@@ -872,24 +872,41 @@ alert("Add at least one part to the job table.");
 return;
 }
 
-for(const item of bulkItems){
-const amount=Number(item.amount||0);
+/* Take a fixed snapshot of every row before any page/table refresh happens. */
+const itemsToProcess=bulkItems.map((item,i)=>{
+const amountInput=document.getElementById("bulkAmount-"+i);
+return {
+part:item.part,
+amount:Number(amountInput ? amountInput.value : item.amount)
+};
+}).filter(item=>item.amount>0);
 
-if(amount>0){
+if(itemsToProcess.length===0){
+alert("Enter a quantity for at least one part.");
+return;
+}
+
+for(const item of itemsToProcess){
+const currentPart=allParts.find(p=>
+(p.id&&item.part.id&&p.id===item.part.id) ||
+(p.manufacturer_part_number&&item.part.manufacturer_part_number&&p.manufacturer_part_number===item.part.manufacturer_part_number)
+) || item.part;
+
 await changeQuantity(
-item.part,
-qty(item.part)-amount,
+currentPart,
+qty(currentPart)-item.amount,
 "JOB OUT",
 job,
 notes
 );
-}
 }
 
 alert("Bulk job issue saved");
 
 bulkItems=[];
 document.getElementById("bulkSearch").value="";
+document.getElementById("bulkJob").value="";
+document.getElementById("bulkNotes").value="";
 renderBulkTable();
 
 showPage("historyPage");
