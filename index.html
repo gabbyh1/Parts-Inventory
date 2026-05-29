@@ -833,7 +833,7 @@ ${bulkItems.map((item,i)=>`
 <tr>
 <td>${item.part.part_name||""}</td>
 <td>${item.part.manufacturer_part_number||""}</td>
-<td>${qty(item.part)}</td>
+<td>${qty(getLatestPart(item.part))}</td>
 <td><input id="bulkAmount-${i}" type="number" min="1" value="${item.amount}" oninput="updateBulkAmount(${i},this.value)"></td>
 <td><button onclick="removeBulkItem(${i})">Remove</button></td>
 </tr>
@@ -858,9 +858,48 @@ renderBulkTable();
 showBulkSearchResults();
 }
 
+function getLatestPart(part){
+return allParts.find(p=>
+(p.id&&part.id&&p.id===part.id) ||
+(p.manufacturer_part_number&&part.manufacturer_part_number&&p.manufacturer_part_number===part.manufacturer_part_number)
+) || part;
+}
+
+async function updatePartQuantityOnly(part,newQty){
+if(newQty<0)newQty=0;
+
+let url=part.id
+? TABLE_API+"?id=eq."+part.id
+: TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
+
+const r=await fetch(url,{
+method:"PATCH",
+headers:{
+"Content-Type":"application/json",
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY,
+Prefer:"return=representation"
+},
+body:JSON.stringify({"Quantity":Number(newQty)})
+});
+
+if(!r.ok){
+throw new Error(await r.text());
+}
+
+const index=allParts.findIndex(p=>
+(p.id&&part.id&&p.id===part.id) ||
+(p.manufacturer_part_number&&part.manufacturer_part_number&&p.manufacturer_part_number===part.manufacturer_part_number)
+);
+
+if(index!==-1){
+allParts[index].quantity=Number(newQty);
+}
+}
+
 async function submitBulkIssue(){
 const job=document.getElementById("bulkJob").value.trim();
-const notes=document.getElementById("bulkNotes").value;
+const notes=document.getElementById("bulkNotes").value.trim();
 
 if(!job){
 alert("Enter a job number");
@@ -872,13 +911,11 @@ alert("Add at least one part to the job table.");
 return;
 }
 
-/* Take a fixed snapshot of every row before any page/table refresh happens. */
 const itemsToProcess=bulkItems.map((item,i)=>{
 const amountInput=document.getElementById("bulkAmount-"+i);
-return {
-part:item.part,
-amount:Number(amountInput ? amountInput.value : item.amount)
-};
+const amount=Number(amountInput ? amountInput.value : item.amount || 0);
+const latestPart=getLatestPart(item.part);
+return {part:latestPart,amount};
 }).filter(item=>item.amount>0);
 
 if(itemsToProcess.length===0){
@@ -886,22 +923,40 @@ alert("Enter a quantity for at least one part.");
 return;
 }
 
-for(const item of itemsToProcess){
-const currentPart=allParts.find(p=>
-(p.id&&item.part.id&&p.id===item.part.id) ||
-(p.manufacturer_part_number&&item.part.manufacturer_part_number&&p.manufacturer_part_number===item.part.manufacturer_part_number)
-) || item.part;
+const failures=[];
 
-await changeQuantity(
-currentPart,
-qty(currentPart)-item.amount,
+for(const item of itemsToProcess){
+try{
+const oldQuantity=qty(item.part);
+const newQuantity=oldQuantity-item.amount;
+
+await updatePartQuantityOnly(item.part,newQuantity);
+
+await logMovement(
+item.part,
 "JOB OUT",
+item.amount,
 job,
 notes
 );
+
+}catch(error){
+failures.push((item.part.part_name||item.part.manufacturer_part_number||"Unknown part")+": "+error.message);
+}
 }
 
-alert("Bulk job issue saved");
+showParts(document.getElementById("search").value.toLowerCase()?allParts.filter(p=>partMatches(p,document.getElementById("search").value.toLowerCase())):allParts);
+showStockWarnings();
+
+if(failures.length){
+alert("Some items were not saved:
+
+"+failures.join("
+"));
+return;
+}
+
+alert("Bulk job issue saved. Every item has been added to Usage History.");
 
 bulkItems=[];
 document.getElementById("bulkSearch").value="";
