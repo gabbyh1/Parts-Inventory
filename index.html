@@ -26,6 +26,7 @@ button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radiu
 .qty-btn{font-size:20px;width:42px}
 .small{font-size:13px;color:#ccc}
 .selected-stock{background:#123d1f!important;border-left:6px solid #00ff55!important;box-shadow:0 0 12px #00ff55}
+.note-box{background:#222;border:1px solid #333;border-radius:10px;padding:10px;margin:10px 0;color:#ddd;white-space:pre-wrap}
 table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
 th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
@@ -128,6 +129,7 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <input id="newRack" placeholder="Rack">
 <input id="newShelf" placeholder="Shelf">
 <input id="newDrawer" placeholder="Drawer e.g. L1 or R5">
+<textarea id="newNotes" placeholder="Notes"></textarea>
 <input id="newQuantity" placeholder="Quantity">
 <button onclick="addPart()">Add Part</button>
 </div>
@@ -429,6 +431,7 @@ return `
 <p><b>Supplier / Manufacturer:</b> ${part.supplier_name||""}</p>
 <p><b>Part Code:</b> ${part.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${part.part_type||""}</p>
+${part.notes?`<div class="note-box"><b>Notes:</b><br>${part.notes}</div>`:""}
 <p class="qty"><b>Quantity:</b> ${qty(part)}</p>
 <p class="small">Warning level for this type: ${warning}</p>
 
@@ -594,6 +597,7 @@ const newPart={
 "Rack":document.getElementById("newRack").value,
 "Shelf":document.getElementById("newShelf").value,
 "Drawer":document.getElementById("newDrawer").value,
+"Notes":document.getElementById("newNotes").value,
 "Quantity":Number(document.getElementById("newQuantity").value||0)
 };
 
@@ -637,6 +641,7 @@ return `
 <input id="erack-${id}" value="${p.rack||""}" placeholder="Rack">
 <input id="eshelf-${id}" value="${p.shelf||""}" placeholder="Shelf">
 <input id="edrawer-${id}" value="${p.drawer||""}" placeholder="Drawer">
+<textarea id="enotes-${id}" placeholder="Notes">${p.notes||""}</textarea>
 <input id="eqty-${id}" value="${qty(p)}" placeholder="Quantity">
 
 <button onclick="saveEdit(${id})">Save Changes</button>
@@ -653,6 +658,7 @@ const data={
 "Rack":document.getElementById("erack-"+id).value,
 "Shelf":document.getElementById("eshelf-"+id).value,
 "Drawer":document.getElementById("edrawer-"+id).value,
+"Notes":document.getElementById("enotes-"+id).value,
 "Quantity":Number(document.getElementById("eqty-"+id).value||0)
 };
 
@@ -720,6 +726,7 @@ document.getElementById("selectedMovePart").innerHTML=`
 <p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
 <p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
 <p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
+${selectedMovementPart.notes?`<div class="note-box"><b>Notes:</b><br>${selectedMovementPart.notes}</div>`:""}
 <p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
 <p class="location">
 ${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}
@@ -998,7 +1005,8 @@ supplier_name:p.supplier_name||"",
 part_type:p.part_type||"",
 rack:p.rack||"",
 shelf:p.shelf||"",
-drawer:p.drawer||""
+drawer:p.drawer||"",
+notes:p.notes||""
 };
 
 if(search&&!JSON.stringify(combined).toLowerCase().includes(search))return false;
@@ -1023,6 +1031,7 @@ return `
 <p><b>Part Code:</b> ${m.manufacturer_part_number||""}</p>
 <p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
 <p><b>Part Type:</b> ${p.part_type||""}</p>
+${p.notes?`<div class="note-box"><b>Part Notes:</b><br>${p.notes}</div>`:""}
 <p><b>Movement:</b> ${m.movement_type||""}</p>
 <p><b>Quantity:</b> ${m.quantity||""}</p>
 <p><b>Job:</b> ${m.job_number||""}</p>
@@ -1050,7 +1059,7 @@ showHistory();
 function exportHistoryToExcel(){
 const filtered=filteredHistoryResults();
 
-let csv="Date,Part Name,Part Code,Supplier,Part Type,Movement,Quantity,Job Number,Notes,Rack,Shelf,Drawer\n";
+let csv="Date,Part Name,Part Code,Supplier,Part Type,Part Notes,Movement,Quantity,Job Number,Movement Notes,Rack,Shelf,Drawer\n";
 
 filtered.forEach(m=>{
 const p=getPartForMovement(m);
@@ -1061,6 +1070,7 @@ m.part_name||"",
 m.manufacturer_part_number||"",
 p.supplier_name||"",
 p.part_type||"",
+p.notes||"",
 m.movement_type||"",
 m.quantity||"",
 m.job_number||"",
