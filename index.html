@@ -26,7 +26,6 @@ button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radiu
 .qty-btn{font-size:20px;width:42px}
 .small{font-size:13px;color:#ccc}
 .selected-stock{background:#123d1f!important;border-left:6px solid #00ff55!important;box-shadow:0 0 12px #00ff55}
-.note-box{background:#222;border:1px solid #333;border-radius:10px;padding:10px;margin:10px 0;color:#ddd;white-space:pre-wrap}
 table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
 th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
@@ -126,10 +125,11 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <input id="newSupplier" placeholder="Supplier / Manufacturer">
 <input id="newMPN" placeholder="Manufacturer Part Number / Part Code">
 <input id="newType" placeholder="Part Type">
+<textarea id="newDescription" placeholder="Description"></textarea>
 <input id="newRack" placeholder="Rack">
 <input id="newShelf" placeholder="Shelf">
 <input id="newDrawer" placeholder="Drawer e.g. L1 or R5">
-<textarea id="newNotes" placeholder="Notes"></textarea>
+<input id="newArea" placeholder="Area e.g. Grey Box, RHS of shelf">
 <input id="newQuantity" placeholder="Quantity">
 <button onclick="addPart()">Add Part</button>
 </div>
@@ -312,13 +312,13 @@ const hashArray=Array.from(new Uint8Array(hashBuffer));
 return hashArray.map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-async function checkPassword(){
+function checkPassword(){
 const entered=document.getElementById("passwordInput").value.trim();
-const hash=await hashText(entered);
 
-if(hash===PASSWORD_HASH){
+if(entered==="STT-123"){
 sessionStorage.setItem("unlocked","yes");
 document.getElementById("loginScreen").style.display="none";
+document.getElementById("loginError").innerText="";
 }else{
 document.getElementById("loginError").innerText="Incorrect password";
 }
@@ -425,13 +425,17 @@ function renderPartCard(part){
 const encoded=encodeURIComponent(JSON.stringify(part));
 const warning=getWarningLevel(part.part_type);
 
+const description=part.description||"";
+const area=part.area||"";
+
 return `
 <div class="${cardClass(part)}">
 <h2>${part.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${part.supplier_name||""}</p>
-<p><b>Part Code:</b> ${part.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${part.part_type||""}</p>
-${part.notes?`<div class="note-box"><b>Notes:</b><br>${part.notes}</div>`:""}
+<p><b>Manufacturer Part Number:</b> ${part.manufacturer_part_number||""}</p>
+<p><b>Part Type:</b> ${part.part_type||""}</p>
+${description?`<p><b>Description:</b> ${description}</p>`:""}
+
 <p class="qty"><b>Quantity:</b> ${qty(part)}</p>
 <p class="small">Warning level for this type: ${warning}</p>
 
@@ -442,6 +446,7 @@ ${part.notes?`<div class="note-box"><b>Notes:</b><br>${part.notes}</div>`:""}
 ${part.rack?"Rack "+part.rack:""}
 ${part.shelf?" | Shelf "+part.shelf:""}
 ${part.drawer?" | Drawer "+part.drawer:""}
+${area?" | Area "+area:""}
 </p>
 
 <button onclick='showMap(${JSON.stringify(part.rack||"")},${JSON.stringify(part.shelf||"")},${JSON.stringify(part.drawer||"")})'>View Location on Map</button>
@@ -594,10 +599,11 @@ const newPart={
 "Supplier Name":document.getElementById("newSupplier").value,
 "Manufacturer Part Number":document.getElementById("newMPN").value,
 "Part Type":document.getElementById("newType").value,
+"Description":document.getElementById("newDescription").value,
 "Rack":document.getElementById("newRack").value,
-"Shelf":document.getElementById("newShelf").value,
+"Shelf":Number(document.getElementById("newShelf").value||0)||null,
 "Drawer":document.getElementById("newDrawer").value,
-"Notes":document.getElementById("newNotes").value,
+"Area":document.getElementById("newArea").value,
 "Quantity":Number(document.getElementById("newQuantity").value||0)
 };
 
@@ -627,47 +633,63 @@ const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
 
 const list=allParts.filter(p=>partMatches(p,s));
 
-document.getElementById("editResults").innerHTML=list.map(p=>{
-const id=p.id||"";
+document.getElementById("editResults").innerHTML=list.map((p,i)=>{
+const encoded=encodeURIComponent(JSON.stringify(p));
 
 return `
 <div class="card">
 <h2>${p.part_name||""}</h2>
 
-<input id="epn-${id}" value="${p.part_name||""}" placeholder="Part Name">
-<input id="esup-${id}" value="${p.supplier_name||""}" placeholder="Supplier">
-<input id="empn-${id}" value="${p.manufacturer_part_number||""}" placeholder="MPN">
-<input id="etype-${id}" value="${p.part_type||""}" placeholder="Type">
-<input id="erack-${id}" value="${p.rack||""}" placeholder="Rack">
-<input id="eshelf-${id}" value="${p.shelf||""}" placeholder="Shelf">
-<input id="edrawer-${id}" value="${p.drawer||""}" placeholder="Drawer">
-<textarea id="enotes-${id}" placeholder="Notes">${p.notes||""}</textarea>
-<input id="eqty-${id}" value="${qty(p)}" placeholder="Quantity">
+<input id="epn-${i}" value="${p.part_name||""}" placeholder="Part Name">
+<input id="esup-${i}" value="${p.supplier_name||""}" placeholder="Supplier">
+<input id="empn-${i}" value="${p.manufacturer_part_number||""}" placeholder="Manufacturer Part Number">
+<input id="etype-${i}" value="${p.part_type||""}" placeholder="Part Type">
+<textarea id="edesc-${i}" placeholder="Description">${p.description||""}</textarea>
+<input id="erack-${i}" value="${p.rack||""}" placeholder="Rack">
+<input id="eshelf-${i}" value="${p.shelf||""}" placeholder="Shelf">
+<input id="edrawer-${i}" value="${p.drawer||"",
+p.area||""}" placeholder="Drawer">
+<input id="earea-${i}" value="${p.area||""}" placeholder="Area">
+<input id="eqty-${i}" value="${qty(p)}" placeholder="Quantity">
 
-<button onclick="saveEdit(${id})">Save Changes</button>
+<button onclick="saveEditFromEncoded('${encoded}',${i})">Save Changes</button>
 </div>`;
 }).join("");
 }
 
-async function saveEdit(id){
+function saveEditFromEncoded(encoded,index){
+const part=JSON.parse(decodeURIComponent(encoded));
+saveEdit(part,index);
+}
+
+async function saveEdit(part,index){
 const data={
-"Part Name":document.getElementById("epn-"+id).value,
-"Supplier Name":document.getElementById("esup-"+id).value,
-"Manufacturer Part Number":document.getElementById("empn-"+id).value,
-"Part Type":document.getElementById("etype-"+id).value,
-"Rack":document.getElementById("erack-"+id).value,
-"Shelf":document.getElementById("eshelf-"+id).value,
-"Drawer":document.getElementById("edrawer-"+id).value,
-"Notes":document.getElementById("enotes-"+id).value,
-"Quantity":Number(document.getElementById("eqty-"+id).value||0)
+"Part Name":document.getElementById("epn-"+index).value,
+"Supplier Name":document.getElementById("esup-"+index).value,
+"Manufacturer Part Number":document.getElementById("empn-"+index).value,
+"Part Type":document.getElementById("etype-"+index).value,
+"Description":document.getElementById("edesc-"+index).value,
+"Rack":document.getElementById("erack-"+index).value,
+"Shelf":Number(document.getElementById("eshelf-"+index).value||0)||null,
+"Drawer":document.getElementById("edrawer-"+index).value,
+"Area":document.getElementById("earea-"+index).value,
+"Quantity":Number(document.getElementById("eqty-"+index).value||0)
 };
 
-const r=await fetch(TABLE_API+"?id=eq."+id,{
+let url="";
+if(part.id){
+url=TABLE_API+"?id=eq."+part.id;
+}else{
+url=TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
+}
+
+const r=await fetch(url,{
 method:"PATCH",
 headers:{
 "Content-Type":"application/json",
 apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
+Authorization:"Bearer "+API_KEY,
+Prefer:"return=representation"
 },
 body:JSON.stringify(data)
 });
@@ -708,8 +730,10 @@ return `
 <div class="${selected?'card selected-stock':'card'}">
 <h2>${p.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${p.part_type||""}</p>
+<p><b>Manufacturer Part Number:</b> ${p.manufacturer_part_number||""}</p>
+<p><b>Part Type:</b> ${p.part_type||""}</p>
+${p.description?`<p><b>Description:</b> ${p.description}</p>`:""}
+${p.area?`<p><b>Area:</b> ${p.area}</p>`:""}
 <p><b>Current Qty:</b> ${qty(p)}</p>
 <button onclick="selectMovementPart('${encoded}')">${selected?'Selected':'Select This Part'}</button>
 </div>`;
@@ -724,9 +748,10 @@ document.getElementById("selectedMovePart").className="card selected-stock";
 document.getElementById("selectedMovePart").innerHTML=`
 <h2>${selectedMovementPart.part_name||""}</h2>
 <p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
-<p><b>Part Code:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
-<p><b>Type:</b> ${selectedMovementPart.part_type||""}</p>
-${selectedMovementPart.notes?`<div class="note-box"><b>Notes:</b><br>${selectedMovementPart.notes}</div>`:""}
+<p><b>Manufacturer Part Number:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
+<p><b>Part Type:</b> ${selectedMovementPart.part_type||""}</p>
+${selectedMovementPart.description?`<p><b>Description:</b> ${selectedMovementPart.description}</p>`:""}
+${selectedMovementPart.area?`<p><b>Area:</b> ${selectedMovementPart.area}</p>`:""}
 <p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
 <p class="location">
 ${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}
@@ -1003,10 +1028,12 @@ const combined={
 ...m,
 supplier_name:p.supplier_name||"",
 part_type:p.part_type||"",
+description:p.description||"",
 rack:p.rack||"",
 shelf:p.shelf||"",
 drawer:p.drawer||"",
-notes:p.notes||""
+p.area||"",
+area:p.area||""
 };
 
 if(search&&!JSON.stringify(combined).toLowerCase().includes(search))return false;
@@ -1028,10 +1055,11 @@ const p=getPartForMovement(m);
 return `
 <div class="card">
 <h2>${m.part_name||""}</h2>
-<p><b>Part Code:</b> ${m.manufacturer_part_number||""}</p>
+<p><b>Manufacturer Part Number:</b> ${m.manufacturer_part_number||""}</p>
 <p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
 <p><b>Part Type:</b> ${p.part_type||""}</p>
-${p.notes?`<div class="note-box"><b>Part Notes:</b><br>${p.notes}</div>`:""}
+${p.description?`<p><b>Description:</b> ${p.description}</p>`:""}
+${p.area?`<p><b>Area:</b> ${p.area}</p>`:""}
 <p><b>Movement:</b> ${m.movement_type||""}</p>
 <p><b>Quantity:</b> ${m.quantity||""}</p>
 <p><b>Job:</b> ${m.job_number||""}</p>
@@ -1059,7 +1087,7 @@ showHistory();
 function exportHistoryToExcel(){
 const filtered=filteredHistoryResults();
 
-let csv="Date,Part Name,Part Code,Supplier,Part Type,Part Notes,Movement,Quantity,Job Number,Movement Notes,Rack,Shelf,Drawer\n";
+let csv="Date,Part Name,Manufacturer Part Number,Supplier,Part Type,Description,Movement,Quantity,Job Number,Movement Notes,Rack,Shelf,Drawer,Area\n";
 
 filtered.forEach(m=>{
 const p=getPartForMovement(m);
@@ -1070,14 +1098,15 @@ m.part_name||"",
 m.manufacturer_part_number||"",
 p.supplier_name||"",
 p.part_type||"",
-p.notes||"",
+p.description||"",
 m.movement_type||"",
 m.quantity||"",
 m.job_number||"",
 m.notes||"",
 p.rack||"",
 p.shelf||"",
-p.drawer||""
+p.drawer||"",
+p.area||""
 ].map(value=>`"${String(value).replace(/"/g,'""')}"`).join(",")+"\n";
 });
 
