@@ -26,6 +26,7 @@ button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radiu
 .qty-btn{font-size:20px;width:42px}
 .small{font-size:13px;color:#ccc}
 .selected-stock{background:#123d1f!important;border-left:6px solid #00ff55!important;box-shadow:0 0 12px #00ff55}
+.delete-btn{background:#660000!important;border:1px solid #ff4d4d!important}
 table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
 th,td{border:1px solid #333;padding:8px;text-align:left}
 th{background:#cc0000;color:white}
@@ -628,9 +629,17 @@ loadParts();
 showPage("searchPage");
 }
 
+function escapeHtml(value){
+return String(value ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+}
+
 function showEditParts(){
 const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
-
 const list=allParts.filter(p=>partMatches(p,s));
 
 document.getElementById("editResults").innerHTML=list.map((p,i)=>{
@@ -638,21 +647,21 @@ const encoded=encodeURIComponent(JSON.stringify(p));
 
 return `
 <div class="card">
-<h2>${p.part_name||""}</h2>
+<h2>${escapeHtml(p.part_name||"")}</h2>
 
-<input id="epn-${i}" value="${p.part_name||""}" placeholder="Part Name">
-<input id="esup-${i}" value="${p.supplier_name||""}" placeholder="Supplier">
-<input id="empn-${i}" value="${p.manufacturer_part_number||""}" placeholder="Manufacturer Part Number">
-<input id="etype-${i}" value="${p.part_type||""}" placeholder="Part Type">
-<textarea id="edesc-${i}" placeholder="Description">${p.description||""}</textarea>
-<input id="erack-${i}" value="${p.rack||""}" placeholder="Rack">
-<input id="eshelf-${i}" value="${p.shelf||""}" placeholder="Shelf">
-<input id="edrawer-${i}" value="${p.drawer||"",
-p.area||""}" placeholder="Drawer">
-<input id="earea-${i}" value="${p.area||""}" placeholder="Area">
+<input id="epn-${i}" value="${escapeHtml(p.part_name||"")}" placeholder="Part Name">
+<input id="esup-${i}" value="${escapeHtml(p.supplier_name||"")}" placeholder="Supplier">
+<input id="empn-${i}" value="${escapeHtml(p.manufacturer_part_number||"")}" placeholder="Manufacturer Part Number">
+<input id="etype-${i}" value="${escapeHtml(p.part_type||"")}" placeholder="Part Type">
+<textarea id="edesc-${i}" placeholder="Description">${escapeHtml(p.description||"")}</textarea>
+<input id="erack-${i}" value="${escapeHtml(p.rack||"")}" placeholder="Rack">
+<input id="eshelf-${i}" value="${escapeHtml(p.shelf||"")}" placeholder="Shelf">
+<input id="edrawer-${i}" value="${escapeHtml(p.drawer||"")}" placeholder="Drawer">
+<input id="earea-${i}" value="${escapeHtml(p.area||"")}" placeholder="Area">
 <input id="eqty-${i}" value="${qty(p)}" placeholder="Quantity">
 
 <button onclick="saveEditFromEncoded('${encoded}',${i})">Save Changes</button>
+<button class="delete-btn" onclick="deletePartFromEncoded('${encoded}')">Delete Part</button>
 </div>`;
 }).join("");
 }
@@ -700,7 +709,45 @@ return;
 }
 
 alert("Updated");
+await loadParts();
+showEditParts();
+}
 
+function deletePartFromEncoded(encoded){
+const part=JSON.parse(decodeURIComponent(encoded));
+deletePart(part);
+}
+
+async function deletePart(part){
+const partName=part.part_name||"this part";
+const mpn=part.manufacturer_part_number||"No part number";
+
+if(!confirm(`Are you sure you want to delete ${partName} (${mpn})? This cannot be undone.`)){
+return;
+}
+
+let url="";
+if(part.id){
+url=TABLE_API+"?id=eq."+part.id;
+}else{
+url=TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
+}
+
+const r=await fetch(url,{
+method:"DELETE",
+headers:{
+apikey:API_KEY,
+Authorization:"Bearer "+API_KEY,
+Prefer:"return=representation"
+}
+});
+
+if(!r.ok){
+alert(await r.text());
+return;
+}
+
+alert("Part deleted");
 await loadParts();
 showEditParts();
 }
