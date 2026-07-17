@@ -5,82 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Electrical Parts</title>
 
-<style>
-body{margin:0;font-family:Arial;background:#0a0a0a;color:white;overflow-x:hidden}
-header{background:#111;border-bottom:4px solid #cc0000;padding:12px;position:sticky;top:0;z-index:1000}
-.top-row{display:flex;align-items:center;gap:10px}
-h1{margin:0;color:#ff2b2b;font-size:26px}
-.menu-btn{background:#cc0000;color:white;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
-.side-menu{display:none;position:fixed;top:66px;left:0;width:280px;background:#111;border-right:4px solid #cc0000;border-bottom:4px solid #cc0000;padding:10px;z-index:2000}
-.side-menu.open{display:flex;flex-direction:column}
-.side-menu button{width:100%;text-align:left;background:#cc0000;border:none;color:white;padding:11px;margin:4px 0;border-radius:8px;font-weight:bold;cursor:pointer}
-.page{display:none;padding:12px}.active{display:block}
-input,select,textarea{width:100%;padding:14px;font-size:16px;border:none;border-radius:10px;margin-bottom:12px;box-sizing:border-box}
-textarea{min-height:80px}
-.card{background:#161616;border-left:6px solid #cc0000;padding:14px;margin-bottom:12px;border-radius:12px}
-.card h2{margin-top:0;color:#ff4d4d}
-.location{color:#00ff88;font-weight:bold}
-.qty{font-size:20px;font-weight:bold;color:white}
-.low{border-left-color:#ffcc00}.critical{border-left-color:#ff0000}
-button{background:#cc0000;border:none;color:white;padding:10px 14px;border-radius:8px;font-weight:bold;margin:5px 4px 0 0;cursor:pointer}
-.qty-btn{font-size:20px;width:42px}
-.small{font-size:13px;color:#ccc}
-.selected-stock{background:#123d1f!important;border-left:6px solid #00ff55!important;box-shadow:0 0 12px #00ff55}
-.delete-btn{background:#660000!important;border:1px solid #ff4d4d!important}
-table{width:100%;border-collapse:collapse;background:#161616;margin-bottom:15px}
-th,td{border:1px solid #333;padding:8px;text-align:left}
-th{background:#cc0000;color:white}
-td input{margin:0;padding:8px}
-.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-#loginScreen{
-position:fixed;
-inset:0;
-background:#0a0a0a;
-z-index:9999;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:20px;
-}
-
-.login-box{
-background:#161616;
-border-left:6px solid #cc0000;
-padding:25px;
-border-radius:14px;
-max-width:400px;
-width:100%;
-}
-
-.map-wrap{width:100%;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
-.map-container{display:flex;gap:20px;align-items:flex-start;transform-origin:top center}
-.workshop{width:720px;height:560px;background:#efefef;border:4px solid black;position:relative;flex-shrink:0}
-.box{position:absolute;border:2px solid black;background:#dce6f2;display:flex;justify-content:center;align-items:center;text-align:center;color:black;font-weight:bold;font-size:14px}
-.highlight{background:#00ff55!important;box-shadow:0 0 25px #00ff55;animation:flash 1s infinite}
-@keyframes flash{0%{opacity:1}50%{opacity:.45}100%{opacity:1}}
-.side-panel{display:flex;flex-direction:column;gap:18px;width:260px;flex-shrink:0}
-.shelf-box{background:#dce6f2;border:2px solid black;color:black}
-.shelf-title{background:#2d65b3;color:white;text-align:center;padding:8px;font-weight:bold}
-.shelf,.drawer-row{border-top:1px solid black;padding:8px;text-align:center}
-
-@media(max-width:700px){
-html,body{overflow-x:hidden;overflow-y:auto}
-h1{font-size:18px}
-header{padding:8px}
-.side-menu{top:52px;width:85%;max-width:300px}
-.page{padding:8px}
-.filter-grid{grid-template-columns:1fr}
-table{font-size:12px}
-th,td{padding:5px}
-body.map-mode{overflow:hidden;height:100vh}
-body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
-#mapPage h2{display:none}
-.map-wrap{height:calc(100vh - 118px);overflow:hidden}
-.map-container{transform:scale(.31);transform-origin:top center}
-.card{padding:10px;font-size:14px}.card h2{font-size:18px}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -89,63 +14,129 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <div class="login-box">
 <h1>Electrical Parts</h1>
 <p>Enter password to continue</p>
-<input id="passwordInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter'){checkPassword()}">
-<button onclick="checkPassword()">Unlock</button>
-<p id="loginError" style="color:#ff4d4d;"></p>
+<label for="operatorName">Your name</label>
+<input id="operatorName" autocomplete="username" maxlength="100" placeholder="Name shown in movement history">
+<label class="sr-only" for="passwordInput">Staff password</label>
+<input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter'){checkPassword()}">
+<button id="loginButton" onclick="checkPassword()">Unlock</button>
+<p id="loginError" class="login-error" role="alert" aria-live="assertive"></p>
 </div>
 </div>
 
 <header>
 <div class="top-row">
-<button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-<h1>Electrical Parts</h1>
+<button id="menuButton" class="menu-btn" aria-controls="sideMenu" aria-expanded="false" onclick="toggleMenu()">☰ Menu</button>
+<div class="header-titles"><h1>Electrical Parts</h1><span id="currentPageTitle">Dashboard</span></div>
+<span id="sessionCountdown" class="session-countdown" aria-live="polite"></span>
 </div>
 
-<nav id="sideMenu" class="side-menu">
-<button onclick="showPage('searchPage');toggleMenu()">Search</button>
-<button onclick="showPage('addPage');toggleMenu()">Add Part</button>
-<button onclick="showPage('editPage');toggleMenu()">Edit Parts</button>
-<button onclick="showPage('stockPage');toggleMenu()">Stock Warnings</button>
-<button onclick="showPage('warningSettingsPage');toggleMenu()">Warning Settings</button>
-<button onclick="showPage('movementPage');toggleMenu()">Stock In / Out</button>
-<button onclick="showPage('bulkPage');toggleMenu()">Bulk Job Issue</button>
-<button onclick="showPage('historyPage');toggleMenu()">Usage History</button>
-<button onclick="showPage('mapPage');toggleMenu()">Map</button>
-<button onclick="logout()">Logout</button>
+<nav id="sideMenu" class="side-menu" aria-label="Inventory navigation">
+<button data-page="dashboardPage" aria-current="page" onclick="showPage('dashboardPage');closeMenu()">Dashboard</button>
+<button data-page="searchPage" onclick="showPage('searchPage');closeMenu()">Inventory</button>
+<button data-page="addPage" onclick="showPage('addPage');toggleMenu()">Add Part</button>
+<button data-page="editPage" onclick="showPage('editPage');toggleMenu()">Edit Parts</button>
+<button data-page="stockPage" onclick="showPage('stockPage');toggleMenu()">Stock Warnings</button>
+<button data-page="reorderPage" onclick="showPage('reorderPage');closeMenu()">Reorder List</button>
+<button data-page="warningSettingsPage" onclick="showPage('warningSettingsPage');toggleMenu()">Warning Settings</button>
+<button data-page="movementPage" onclick="showPage('movementPage');toggleMenu()">Stock In / Out</button>
+<button data-page="bulkPage" onclick="showPage('bulkPage');toggleMenu()">Bulk Job Issue</button>
+<button data-page="historyPage" onclick="showPage('historyPage');toggleMenu()">Usage History</button>
+<button data-page="importPage" onclick="showPage('importPage');closeMenu()">Import Parts</button>
+<button data-page="duplicatesPage" onclick="showPage('duplicatesPage');closeMenu()">Duplicate Review</button>
+<button data-page="mapPage" onclick="showPage('mapPage');toggleMenu()">Map</button>
+<button class="nav-logout" onclick="logout()">Logout</button>
 </nav>
 </header>
 
-<div id="searchPage" class="page active">
-<input id="search" placeholder="Search parts..." oninput="searchParts()">
+<div id="appStatus" class="app-status" role="status" aria-live="polite"></div>
+
+<div id="dashboardPage" class="page active">
+<div class="page-heading"><div><p class="eyebrow">Inventory overview</p><h2>Dashboard</h2></div><button onclick="loadParts()">Refresh</button></div>
+<div id="dashboardStats" class="stats-grid"></div>
+<div class="dashboard-grid">
+<section class="panel"><div class="section-heading"><h3>Needs attention</h3><button onclick="showPage('stockPage')">View all</button></div><div id="dashboardLowStock"></div></section>
+<section class="panel"><div class="section-heading"><h3>Recent movements</h3><button onclick="showPage('historyPage')">View history</button></div><div id="dashboardMovements"></div></section>
+</div>
+</div>
+
+<div id="searchPage" class="page">
+<div class="page-heading"><div><p class="eyebrow">Parts catalogue</p><h2>Inventory</h2></div><button onclick="openScanner()">Scan barcode</button></div>
+<div class="inventory-toolbar">
+<label class="sr-only" for="search">Search parts</label>
+<input id="search" placeholder="Search name, code, supplier or location..." oninput="searchParts()">
+<div class="filter-grid inventory-filters">
+<label for="inventorySupplierFilter"><span>Supplier</span><select id="inventorySupplierFilter" onchange="searchParts()"><option value="">All suppliers</option></select></label>
+<label for="inventoryTypeFilter"><span>Part type</span><select id="inventoryTypeFilter" onchange="searchParts()"><option value="">All part types</option></select></label>
+<label for="inventoryStockFilter"><span>Stock</span><select id="inventoryStockFilter" onchange="searchParts()"><option value="">All stock</option><option value="low">Low stock</option><option value="manual">Manually marked low</option><option value="healthy">Healthy</option><option value="out">Out of stock</option></select></label>
+<label for="inventorySort"><span>Sort</span><select id="inventorySort" onchange="searchParts()"><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="quantity-asc">Quantity low–high</option><option value="quantity-desc">Quantity high–low</option><option value="supplier-asc">Supplier A–Z</option><option value="location-asc">Location</option></select></label>
+</div>
+<div class="toolbar-actions"><button onclick="clearInventoryFilters()">Clear filters</button><button id="cardViewButton" onclick="setInventoryView('cards')">Cards</button><button id="tableViewButton" onclick="setInventoryView('table')">Table</button></div>
+</div>
+<div id="inventoryResultSummary" class="result-summary"></div>
 <div id="results"></div>
+<div id="inventoryPagination" class="pagination"></div>
 </div>
 
 <div id="addPage" class="page">
-<h2>Add New Part</h2>
+<div class="page-heading"><div><p class="eyebrow">New inventory record</p><h2>Add New Part</h2></div></div>
+<fieldset><legend>Part details</legend>
+<label class="sr-only" for="newPartName">Part name</label>
 <input id="newPartName" placeholder="Part Name">
+<label class="sr-only" for="newSupplier">Supplier or manufacturer</label>
 <input id="newSupplier" placeholder="Supplier / Manufacturer">
+<label class="sr-only" for="newMPN">Manufacturer part number or part code</label>
 <input id="newMPN" placeholder="Manufacturer Part Number / Part Code">
+<label class="sr-only" for="newType">Part type</label>
 <input id="newType" placeholder="Part Type">
+<label class="sr-only" for="newDescription">Description</label>
 <textarea id="newDescription" placeholder="Description"></textarea>
+</fieldset>
+<fieldset><legend>Location and stock</legend>
+<label class="sr-only" for="newRack">Rack</label>
 <input id="newRack" placeholder="Rack">
-<input id="newShelf" placeholder="Shelf">
+<label class="sr-only" for="newShelf">Shelf</label>
+<input id="newShelf" type="number" min="0" step="1" placeholder="Shelf">
+<label class="sr-only" for="newDrawer">Drawer</label>
 <input id="newDrawer" placeholder="Drawer e.g. L1 or R5">
+<label class="sr-only" for="newArea">Area</label>
 <input id="newArea" placeholder="Area e.g. Grey Box, RHS of shelf">
-<input id="newQuantity" placeholder="Quantity">
-<button onclick="addPart()">Add Part</button>
+<label class="sr-only" for="newQuantity">Quantity</label>
+<input id="newQuantity" type="number" min="0" step="1" placeholder="Quantity">
+<label class="checkbox-label"><input id="newManuallyLow" type="checkbox"> Mark this part as low stock manually</label>
+<label for="newReorderQuantity">Suggested reorder quantity</label>
+<input id="newReorderQuantity" type="number" min="0" step="1" placeholder="Suggested reorder quantity">
+</fieldset>
+<fieldset><legend>Purchasing and references</legend>
+<label for="newSupplierUrl">Supplier page</label>
+<input id="newSupplierUrl" type="url" placeholder="https://supplier.example/part">
+<label for="newDatasheetUrl">Datasheet</label>
+<input id="newDatasheetUrl" type="url" placeholder="https://example.com/datasheet.pdf">
+<label for="newImageUrl">Part image</label>
+<input id="newImageUrl" type="url" placeholder="https://example.com/image.jpg">
+<label for="newPurchasePrice">Purchase price</label>
+<input id="newPurchasePrice" type="number" min="0" step="0.01" placeholder="0.00">
+</fieldset>
+<button id="addPartButton" onclick="addPart()">Add Part</button>
 </div>
 
 <div id="editPage" class="page">
 <h2>Edit Existing Parts</h2>
+<label class="sr-only" for="editSearch">Search for a part to edit</label>
 <input id="editSearch" placeholder="Search part to edit..." oninput="showEditParts()">
 <div id="editResults"></div>
 </div>
 
 <div id="stockPage" class="page">
 <h2>Stock Warnings</h2>
-<p>Items are shown based on their part type warning level.</p>
+<p>Items appear when their quantity reaches the part-type threshold or when someone marks them as low manually.</p>
 <button onclick="showPage('warningSettingsPage')">Edit Stock Warning Levels</button>
 <div id="stockResults"></div>
+</div>
+
+<div id="reorderPage" class="page">
+<div class="page-heading"><div><p class="eyebrow">Purchasing support</p><h2>Reorder List</h2></div><button onclick="exportReorderList()">Export CSV</button></div>
+<p>Low-stock parts are grouped by supplier. Suggested order quantities can be adjusted on each part.</p>
+<div id="reorderResults"></div>
 </div>
 
 <div id="warningSettingsPage" class="page">
@@ -159,18 +150,23 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <h3>Selected Stock Movement</h3>
 <div id="selectedMovePart" class="card">No part selected.</div>
 
+<label class="sr-only" for="moveType">Movement type</label>
 <select id="moveType">
 <option value="IN">Stock In</option>
 <option value="OUT">Stock Out</option>
 </select>
 
-<input id="moveQty" type="number" placeholder="Quantity">
+<label class="sr-only" for="moveQty">Movement quantity</label>
+<input id="moveQty" type="number" min="1" step="1" placeholder="Quantity">
+<label class="sr-only" for="moveJob">Job number or reference</label>
 <input id="moveJob" placeholder="Job Number / Reference">
+<label class="sr-only" for="moveNotes">Movement notes</label>
 <textarea id="moveNotes" placeholder="Notes"></textarea>
-<button onclick="submitMovement()">Submit Movement</button>
+<button id="movementSubmitButton" onclick="submitMovement()">Submit Movement</button>
 
 <hr>
 
+<label class="sr-only" for="moveSearch">Search for a part to move</label>
 <input id="moveSearch" placeholder="Search part name, supplier, part code, type, rack, shelf or drawer..." oninput="showMovementSearchResults()">
 <div id="moveSearchResults"></div>
 </div>
@@ -179,25 +175,40 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <h2>Bulk Job Issue</h2>
 <p class="small">Search for parts, add them to the job table, then enter the quantity used.</p>
 
+<div class="template-bar">
+<label for="bulkTemplateName">Template name</label>
+<input id="bulkTemplateName" maxlength="100" placeholder="e.g. Standard control panel">
+<button onclick="saveBulkTemplate()">Save current list</button>
+<label for="bulkTemplateSelect">Saved templates</label>
+<select id="bulkTemplateSelect"><option value="">Choose a template</option></select>
+<button onclick="loadBulkTemplate()">Load template</button>
+<button class="delete-btn" onclick="deleteBulkTemplate()">Delete template</button>
+</div>
+
+<label class="sr-only" for="bulkJob">Job number</label>
 <input id="bulkJob" placeholder="Job Number">
+<label class="sr-only" for="bulkNotes">Job notes</label>
 <textarea id="bulkNotes" placeholder="Job notes"></textarea>
 
+<label class="sr-only" for="bulkSearch">Search for a part to add to the job</label>
 <input id="bulkSearch" placeholder="Search part to add to job..." oninput="showBulkSearchResults()">
 <div id="bulkSearchResults"></div>
 
 <h3>Parts Added To This Job</h3>
 <div id="bulkJobTable"></div>
 
-<button onclick="submitBulkIssue()">Submit Bulk Issue</button>
+<button id="bulkSubmitButton" onclick="submitBulkIssue()">Submit Bulk Issue</button>
 <button onclick="clearBulkJob()">Clear Job List</button>
 </div>
 
 <div id="historyPage" class="page">
-<h2>Stock Movement / Job History</h2>
+<div class="page-heading"><div><p class="eyebrow">Audit trail</p><h2>Stock Movement / Job History</h2></div></div>
 
+<label class="sr-only" for="historySearch">Search movement history</label>
 <input id="historySearch" placeholder="Search all fields including job number, part name, part code, supplier..." oninput="showHistory()">
 
 <div class="filter-grid">
+<label class="sr-only" for="historyTypeFilter">Filter by movement type</label>
 <select id="historyTypeFilter" onchange="showHistory()">
 <option value="">All Movement Types</option>
 <option value="IN">Stock In</option>
@@ -205,27 +216,58 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 <option value="MANUAL IN">Manual In</option>
 <option value="MANUAL OUT">Manual Out</option>
 <option value="JOB OUT">Job Out</option>
+<option value="REVERSAL">Reversal</option>
+<option value="MERGE">Merge</option>
 </select>
 
+<label class="sr-only" for="historySupplierFilter">Filter by supplier</label>
 <select id="historySupplierFilter" onchange="showHistory()">
 <option value="">All Suppliers / Manufacturers</option>
 </select>
 
+<label class="sr-only" for="historyPartTypeFilter">Filter by part type</label>
 <select id="historyPartTypeFilter" onchange="showHistory()">
 <option value="">All Part Types</option>
 </select>
 
+<label class="sr-only" for="historyJobFilter">Filter by job number</label>
 <select id="historyJobFilter" onchange="showHistory()">
 <option value="">All Job Numbers</option>
 </select>
+
+<label for="historyDateFrom"><span>From date</span><input id="historyDateFrom" type="date" onchange="showHistory()"></label>
+<label for="historyDateTo"><span>To date</span><input id="historyDateTo" type="date" onchange="showHistory()"></label>
 </div>
 
 <button onclick="clearHistoryFilters()">Clear Filters</button>
-<button onclick="exportHistoryToExcel()">Export Current Results to Excel</button>
+<button onclick="exportHistoryToExcel()">Export Current Results to CSV</button>
 
+<div id="historySummary" class="result-summary"></div>
 <div id="historyResults"></div>
 </div>
+
+<div id="importPage" class="page">
+<div class="page-heading"><div><p class="eyebrow">Bulk data tools</p><h2>Import Parts from CSV</h2></div></div>
+<div class="panel">
+<p>Upload a CSV containing at least <code>Part Name</code>. Existing manufacturer part numbers are flagged before anything is saved.</p>
+<label for="csvImportFile">CSV file</label>
+<input id="csvImportFile" type="file" accept=".csv,text/csv" onchange="previewCsvImport(event)">
+<button onclick="downloadImportTemplate()">Download template</button>
+</div>
+<div id="csvImportSummary" class="result-summary"></div>
+<div id="csvImportPreview"></div>
+<button id="csvImportButton" onclick="commitCsvImport()" disabled>Import valid rows</button>
+</div>
+
+<div id="duplicatesPage" class="page">
+<div class="page-heading"><div><p class="eyebrow">Data quality</p><h2>Duplicate Review</h2></div></div>
+<p>Parts sharing the same manufacturer part number are grouped below. Review the records carefully before merging.</p>
+<div id="duplicateResults"></div>
+</div>
+
 <div id="mapPage" class="page">
+<div class="page-heading"><div><p class="eyebrow">Workshop locator</p><h2>Location Map</h2></div><div class="map-controls"><button onclick="changeMapZoom(-0.1)">−</button><button onclick="resetMapZoom()">Reset zoom</button><button onclick="changeMapZoom(0.1)">+</button></div></div>
+<div class="map-legend"><span><i class="legend-box"></i> Storage location</span><span><i class="legend-box selected"></i> Selected location</span></div>
 <div id="selectedInfo"></div>
 
 <div class="map-wrap">
@@ -289,932 +331,36 @@ body.map-mode #mapPage{height:calc(100vh - 76px);overflow:hidden;padding:4px}
 </div>
 </div>
 
-<script>
-const PASSWORD_HASH="a15b76f0a1c9ef43b45157bc098e93d443d8902a53653517dbcca59de9decd73";
-
-const API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/parts_public";
-const TABLE_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/Parts";
-const MOVEMENT_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_movements";
-const WARNING_API="https://snbavhdmagfufvpiocrf.supabase.co/rest/v1/stock_warning_rules";
-const API_KEY="sb_publishable_PPTLw8gmtTmpbaKq_uP07Q_nWmTYSjt";
-const DEFAULT_LOW_STOCK_LIMIT=2;
-
-let allParts=[];
-let movements=[];
-let bulkItems=[];
-let selectedMovementPart=null;
-let warningRules=[];
-
-async function hashText(text){
-const encoder=new TextEncoder();
-const data=encoder.encode(text);
-const hashBuffer=await crypto.subtle.digest("SHA-256",data);
-const hashArray=Array.from(new Uint8Array(hashBuffer));
-return hashArray.map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
-function checkPassword(){
-const entered=document.getElementById("passwordInput").value.trim();
-
-if(entered==="STT-123"){
-sessionStorage.setItem("unlocked","yes");
-document.getElementById("loginScreen").style.display="none";
-document.getElementById("loginError").innerText="";
-}else{
-document.getElementById("loginError").innerText="Incorrect password";
-}
-}
-
-function logout(){
-sessionStorage.removeItem("unlocked");
-location.reload();
-}
-
-window.addEventListener("load",()=>{
-if(sessionStorage.getItem("unlocked")==="yes"){
-document.getElementById("loginScreen").style.display="none";
-}
-});
-
-function toggleMenu(){
-document.getElementById("sideMenu").classList.toggle("open");
-}
-
-function showPage(page){
-document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-document.getElementById(page).classList.add("active");
-document.body.classList.toggle("map-mode",page==="mapPage");
-
-if(page==="editPage")showEditParts();
-if(page==="stockPage")showStockWarnings();
-if(page==="warningSettingsPage")showWarningSettings();
-
-if(page==="movementPage"){
-selectedMovementPart=null;
-document.getElementById("selectedMovePart").className="card";
-document.getElementById("selectedMovePart").innerHTML="No part selected.";
-showMovementSearchResults();
-}
-
-if(page==="bulkPage"){
-showBulkSearchResults();
-renderBulkTable();
-}
-
-if(page==="historyPage")loadMovements();
-}
-
-async function loadParts(){
-const r=await fetch(API,{
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-}
-});
-
-allParts=await r.json();
-
-await loadWarningRules();
-
-showParts(allParts);
-showStockWarnings();
-renderBulkTable();
-}
-
-async function loadWarningRules(){
-const r=await fetch(WARNING_API+"?select=*",{
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-}
-});
-
-warningRules=await r.json();
-}
-
-function qty(p){
-return Number(p.quantity||0);
-}
-
-function getWarningLevel(partType){
-const rule=warningRules.find(r=>
-String(r.part_type||"").toLowerCase()===String(partType||"").toLowerCase()
-);
-
-return rule?Number(rule.warning_level||DEFAULT_LOW_STOCK_LIMIT):DEFAULT_LOW_STOCK_LIMIT;
-}
-
-function cardClass(p){
-const warning=getWarningLevel(p.part_type);
-
-if(qty(p)<=0)return"card critical";
-if(qty(p)<=warning)return"card low";
-
-return"card";
-}
-
-function partMatches(p,s){
-return JSON.stringify(p).toLowerCase().includes(s);
-}
-
-function searchParts(){
-const s=document.getElementById("search").value.toLowerCase();
-showParts(allParts.filter(p=>partMatches(p,s)));
-}
-
-function renderPartCard(part){
-const encoded=encodeURIComponent(JSON.stringify(part));
-const warning=getWarningLevel(part.part_type);
-
-const description=part.description||"";
-const area=part.area||"";
-
-return `
-<div class="${cardClass(part)}">
-<h2>${part.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${part.supplier_name||""}</p>
-<p><b>Manufacturer Part Number:</b> ${part.manufacturer_part_number||""}</p>
-<p><b>Part Type:</b> ${part.part_type||""}</p>
-${description?`<p><b>Description:</b> ${description}</p>`:""}
-
-<p class="qty"><b>Quantity:</b> ${qty(part)}</p>
-<p class="small">Warning level for this type: ${warning}</p>
-
-<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)-1},'MANUAL OUT','')">-</button>
-<button class="qty-btn" onclick="changeQuantityFromEncoded('${encoded}',${qty(part)+1},'MANUAL IN','')">+</button>
-
-<p class="location">
-${part.rack?"Rack "+part.rack:""}
-${part.shelf?" | Shelf "+part.shelf:""}
-${part.drawer?" | Drawer "+part.drawer:""}
-${area?" | Area "+area:""}
-</p>
-
-<button onclick='showMap(${JSON.stringify(part.rack||"")},${JSON.stringify(part.shelf||"")},${JSON.stringify(part.drawer||"")})'>View Location on Map</button>
-</div>`;
-}
-
-function showParts(parts){
-document.getElementById("results").innerHTML=parts.map(renderPartCard).join("");
-}
-
-function showStockWarnings(){
-const low=[...allParts]
-.filter(p=>qty(p)<=getWarningLevel(p.part_type))
-.sort((a,b)=>qty(a)-qty(b));
-
-document.getElementById("stockResults").innerHTML=low.length
-? low.map(renderPartCard).join("")
-: `<div class="card"><h2>No low stock items</h2></div>`;
-}
-
-function showWarningSettings(){
-const partTypes=[...new Set(allParts.map(p=>p.part_type||"Unknown").filter(Boolean))].sort();
-
-document.getElementById("warningSettingsResults").innerHTML=`
-<table>
-<thead>
-<tr><th>Part Type</th><th>Warning Level</th><th>Save</th></tr>
-</thead>
-<tbody>
-${partTypes.map((type,i)=>`
-<tr>
-<td>${type}</td>
-<td><input id="warn-${i}" type="number" value="${getWarningLevel(type)}"></td>
-<td><button onclick="saveWarningRule('${encodeURIComponent(type)}','warn-${i}')">Save</button></td>
-</tr>
-`).join("")}
-</tbody>
-</table>`;
-}
-
-async function saveWarningRule(encodedType,inputId){
-const type=decodeURIComponent(encodedType);
-const level=Number(document.getElementById(inputId).value||DEFAULT_LOW_STOCK_LIMIT);
-
-const existing=warningRules.find(r=>
-String(r.part_type||"").toLowerCase()===String(type||"").toLowerCase()
-);
-
-let response;
-
-if(existing){
-response=await fetch(WARNING_API+"?id=eq."+existing.id,{
-method:"PATCH",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify({warning_level:level})
-});
-}else{
-response=await fetch(WARNING_API,{
-method:"POST",
-headers:{"Content-Type":"application/json",apikey:API_KEY,Authorization:"Bearer "+API_KEY},
-body:JSON.stringify({part_type:type,warning_level:level})
-});
-}
-
-if(!response.ok){
-alert(await response.text());
-return;
-}
-
-alert("Warning level saved");
-await loadWarningRules();
-showWarningSettings();
-showStockWarnings();
-}
-
-function changeQuantityFromEncoded(encoded,newQty,type,job){
-changeQuantity(JSON.parse(decodeURIComponent(encoded)),newQty,type,job);
-}
-
-async function changeQuantity(part,newQty,type="UPDATE",job="",notes=""){
-if(newQty<0)newQty=0;
-
-let url=part.id
-? TABLE_API+"?id=eq."+part.id
-: TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
-
-const r=await fetch(url,{
-method:"PATCH",
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY,
-Prefer:"return=representation"
-},
-body:JSON.stringify({"Quantity":Number(newQty)})
-});
-
-if(!r.ok){
-alert(await r.text());
-return;
-}
-
-const oldQty=qty(part);
-
-const index=allParts.findIndex(p=>
-(p.id&&p.id===part.id) ||
-(!p.id&&p.manufacturer_part_number===part.manufacturer_part_number)
-);
-
-if(index!==-1)allParts[index].quantity=Number(newQty);
-
-await logMovement(part,type,Math.abs(oldQty-newQty),job,notes);
-
-if(selectedMovementPart&&((selectedMovementPart.id&&selectedMovementPart.id===part.id)||selectedMovementPart.manufacturer_part_number===part.manufacturer_part_number)){
-selectedMovementPart.quantity=Number(newQty);
-selectMovementPart(encodeURIComponent(JSON.stringify(selectedMovementPart)));
-}
-
-const search=document.getElementById("search").value.toLowerCase();
-showParts(search?allParts.filter(p=>partMatches(p,search)):allParts);
-showStockWarnings();
-renderBulkTable();
-}
-
-  async function logMovement(part,type,amount,job,notes){
-if(!amount)return;
-
-await fetch(MOVEMENT_API,{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-},
-body:JSON.stringify({
-part_id:part.id||null,
-part_name:part.part_name||"",
-manufacturer_part_number:part.manufacturer_part_number||"",
-movement_type:type,
-quantity:Number(amount),
-job_number:job||"",
-notes:notes||""
-})
-});
-}
-
-async function addPart(){
-const newPart={
-"Part Name":document.getElementById("newPartName").value,
-"Supplier Name":document.getElementById("newSupplier").value,
-"Manufacturer Part Number":document.getElementById("newMPN").value,
-"Part Type":document.getElementById("newType").value,
-"Description":document.getElementById("newDescription").value,
-"Rack":document.getElementById("newRack").value,
-"Shelf":Number(document.getElementById("newShelf").value||0)||null,
-"Drawer":document.getElementById("newDrawer").value,
-"Area":document.getElementById("newArea").value,
-"Quantity":Number(document.getElementById("newQuantity").value||0)
-};
-
-const r=await fetch(TABLE_API,{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-},
-body:JSON.stringify(newPart)
-});
-
-if(!r.ok){
-alert(await r.text());
-return;
-}
-
-alert("Part Added");
-
-loadParts();
-showPage("searchPage");
-}
-
-function escapeHtml(value){
-return String(value ?? "")
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;");
-}
-
-function showEditParts(){
-const s=(document.getElementById("editSearch")?.value||"").toLowerCase();
-const list=allParts.filter(p=>partMatches(p,s));
-
-document.getElementById("editResults").innerHTML=list.map((p,i)=>{
-const encoded=encodeURIComponent(JSON.stringify(p));
-
-return `
-<div class="card">
-<h2>${escapeHtml(p.part_name||"")}</h2>
-
-<input id="epn-${i}" value="${escapeHtml(p.part_name||"")}" placeholder="Part Name">
-<input id="esup-${i}" value="${escapeHtml(p.supplier_name||"")}" placeholder="Supplier">
-<input id="empn-${i}" value="${escapeHtml(p.manufacturer_part_number||"")}" placeholder="Manufacturer Part Number">
-<input id="etype-${i}" value="${escapeHtml(p.part_type||"")}" placeholder="Part Type">
-<textarea id="edesc-${i}" placeholder="Description">${escapeHtml(p.description||"")}</textarea>
-<input id="erack-${i}" value="${escapeHtml(p.rack||"")}" placeholder="Rack">
-<input id="eshelf-${i}" value="${escapeHtml(p.shelf||"")}" placeholder="Shelf">
-<input id="edrawer-${i}" value="${escapeHtml(p.drawer||"")}" placeholder="Drawer">
-<input id="earea-${i}" value="${escapeHtml(p.area||"")}" placeholder="Area">
-<input id="eqty-${i}" value="${qty(p)}" placeholder="Quantity">
-
-<button onclick="saveEditFromEncoded('${encoded}',${i})">Save Changes</button>
-<button class="delete-btn" onclick="deletePartFromEncoded('${encoded}')">Delete Part</button>
-</div>`;
-}).join("");
-}
-
-function saveEditFromEncoded(encoded,index){
-const part=JSON.parse(decodeURIComponent(encoded));
-saveEdit(part,index);
-}
-
-async function saveEdit(part,index){
-const data={
-"Part Name":document.getElementById("epn-"+index).value,
-"Supplier Name":document.getElementById("esup-"+index).value,
-"Manufacturer Part Number":document.getElementById("empn-"+index).value,
-"Part Type":document.getElementById("etype-"+index).value,
-"Description":document.getElementById("edesc-"+index).value,
-"Rack":document.getElementById("erack-"+index).value,
-"Shelf":Number(document.getElementById("eshelf-"+index).value||0)||null,
-"Drawer":document.getElementById("edrawer-"+index).value,
-"Area":document.getElementById("earea-"+index).value,
-"Quantity":Number(document.getElementById("eqty-"+index).value||0)
-};
-
-let url="";
-if(part.id){
-url=TABLE_API+"?id=eq."+part.id;
-}else{
-url=TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
-}
-
-const r=await fetch(url,{
-method:"PATCH",
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY,
-Prefer:"return=representation"
-},
-body:JSON.stringify(data)
-});
-
-if(!r.ok){
-alert(await r.text());
-return;
-}
-
-alert("Updated");
-await loadParts();
-showEditParts();
-}
-
-function deletePartFromEncoded(encoded){
-const part=JSON.parse(decodeURIComponent(encoded));
-deletePart(part);
-}
-
-async function deletePart(part){
-const partName=part.part_name||"this part";
-const mpn=part.manufacturer_part_number||"No part number";
-
-if(!confirm(`Are you sure you want to delete ${partName} (${mpn})? This cannot be undone.`)){
-return;
-}
-
-let url="";
-if(part.id){
-url=TABLE_API+"?id=eq."+part.id;
-}else{
-url=TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(part.manufacturer_part_number);
-}
-
-const r=await fetch(url,{
-method:"DELETE",
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY,
-Prefer:"return=representation"
-}
-});
-
-if(!r.ok){
-alert(await r.text());
-return;
-}
-
-alert("Part deleted");
-await loadParts();
-showEditParts();
-}
-
-function showMovementSearchResults(){
-const box=document.getElementById("moveSearchResults");
-if(!box)return;
-
-const s=(document.getElementById("moveSearch")?.value||"").toLowerCase();
-
-if(!s){
-box.innerHTML=`<div class="card"><p>Search for a part to select it.</p></div>`;
-return;
-}
-
-const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
-
-box.innerHTML=matches.length?matches.map(p=>{
-const encoded=encodeURIComponent(JSON.stringify(p));
-
-const selected=selectedMovementPart&&(
-(selectedMovementPart.id&&selectedMovementPart.id===p.id) ||
-selectedMovementPart.manufacturer_part_number===p.manufacturer_part_number
-);
-
-return `
-<div class="${selected?'card selected-stock':'card'}">
-<h2>${p.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Manufacturer Part Number:</b> ${p.manufacturer_part_number||""}</p>
-<p><b>Part Type:</b> ${p.part_type||""}</p>
-${p.description?`<p><b>Description:</b> ${p.description}</p>`:""}
-${p.area?`<p><b>Area:</b> ${p.area}</p>`:""}
-<p><b>Current Qty:</b> ${qty(p)}</p>
-<button onclick="selectMovementPart('${encoded}')">${selected?'Selected':'Select This Part'}</button>
-</div>`;
-}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
-}
-
-function selectMovementPart(encoded){
-selectedMovementPart=JSON.parse(decodeURIComponent(encoded));
-
-document.getElementById("selectedMovePart").className="card selected-stock";
-
-document.getElementById("selectedMovePart").innerHTML=`
-<h2>${selectedMovementPart.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${selectedMovementPart.supplier_name||""}</p>
-<p><b>Manufacturer Part Number:</b> ${selectedMovementPart.manufacturer_part_number||""}</p>
-<p><b>Part Type:</b> ${selectedMovementPart.part_type||""}</p>
-${selectedMovementPart.description?`<p><b>Description:</b> ${selectedMovementPart.description}</p>`:""}
-${selectedMovementPart.area?`<p><b>Area:</b> ${selectedMovementPart.area}</p>`:""}
-<p><b>Current Quantity:</b> ${qty(selectedMovementPart)}</p>
-<p class="location">
-${selectedMovementPart.rack?"Rack "+selectedMovementPart.rack:""}
-${selectedMovementPart.shelf?" | Shelf "+selectedMovementPart.shelf:""}
-${selectedMovementPart.drawer?" | Drawer "+selectedMovementPart.drawer:""}
-</p>`;
-
-document.getElementById("moveQty").focus();
-
-showMovementSearchResults();
-}
-
-async function submitMovement(){
-const p=selectedMovementPart;
-const type=document.getElementById("moveType").value;
-const amount=Number(document.getElementById("moveQty").value||0);
-const job=document.getElementById("moveJob").value;
-const notes=document.getElementById("moveNotes").value;
-
-if(!p||!amount){
-alert("Select a part and quantity");
-return;
-}
-
-const newQty=type==="IN"?qty(p)+amount:qty(p)-amount;
-
-await changeQuantity(p,newQty,type,job,notes);
-
-document.getElementById("moveQty").value="";
-document.getElementById("moveJob").value="";
-document.getElementById("moveNotes").value="";
-
-alert("Movement saved");
-}
-
-function showBulkSearchResults(){
-const box=document.getElementById("bulkSearchResults");
-if(!box)return;
-
-const s=(document.getElementById("bulkSearch")?.value||"").toLowerCase();
-
-if(!s){
-box.innerHTML=`<div class="card"><p>Start typing to search parts.</p></div>`;
-return;
-}
-
-const matches=allParts.filter(p=>partMatches(p,s)).slice(0,20);
-
-box.innerHTML=matches.length?matches.map(p=>{
-const encoded=encodeURIComponent(JSON.stringify(p));
-
-return `
-<div class="card">
-<h2>${p.part_name||""}</h2>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Code:</b> ${p.manufacturer_part_number||""}</p>
-<p><b>Current Qty:</b> ${qty(p)}</p>
-<p class="location">
-${p.rack?"Rack "+p.rack:""}
-${p.shelf?" | Shelf "+p.shelf:""}
-${p.drawer?" | Drawer "+p.drawer:""}
-</p>
-<button onclick="addToBulkJob('${encoded}')">Add to Job</button>
-</div>`;
-}).join(""):`<div class="card"><p>No matching parts found.</p></div>`;
-}
-
-function addToBulkJob(encoded){
-const part=JSON.parse(decodeURIComponent(encoded));
-
-const exists=bulkItems.find(i=>
-(i.part.id&&i.part.id===part.id) ||
-i.part.manufacturer_part_number===part.manufacturer_part_number
-);
-
-if(exists){
-alert("This part is already in the job table.");
-return;
-}
-
-bulkItems.push({
-part:part,
-amount:1
-});
-
-renderBulkTable();
-}
-
-function renderBulkTable(){
-const box=document.getElementById("bulkJobTable");
-if(!box)return;
-
-if(bulkItems.length===0){
-box.innerHTML=`<div class="card"><p>No parts added to this job yet.</p></div>`;
-return;
-}
-
-box.innerHTML=`
-<table>
-<thead>
-<tr>
-<th>Part</th>
-<th>Part Code</th>
-<th>Stock</th>
-<th>Qty Used</th>
-<th>Remove</th>
-</tr>
-</thead>
-<tbody>
-${bulkItems.map((item,i)=>`
-<tr>
-<td>${item.part.part_name||""}</td>
-<td>${item.part.manufacturer_part_number||""}</td>
-<td>${qty(item.part)}</td>
-<td><input id="bulkAmount-${i}" type="number" min="1" value="${item.amount}" oninput="updateBulkAmount(${i},this.value)"></td>
-<td><button onclick="removeBulkItem(${i})">Remove</button></td>
-</tr>
-`).join("")}
-</tbody>
-</table>`;
-}
-
-function updateBulkAmount(index,value){
-bulkItems[index].amount=Number(value||0);
-}
-
-function removeBulkItem(index){
-bulkItems.splice(index,1);
-renderBulkTable();
-}
-
-function clearBulkJob(){
-bulkItems=[];
-document.getElementById("bulkSearch").value="";
-document.getElementById("bulkJob").value="";
-document.getElementById("bulkNotes").value="";
-renderBulkTable();
-showBulkSearchResults();
-}
-
-async function submitBulkIssue(){
-const job=document.getElementById("bulkJob").value.trim();
-const notes=document.getElementById("bulkNotes").value;
-
-if(!job){
-alert("Enter a job number");
-return;
-}
-
-if(bulkItems.length===0){
-alert("Add at least one part to the job table.");
-return;
-}
-
-/* Take a snapshot of the table BEFORE updating anything.
-   This stops the page re-rendering during processing from losing rows. */
-const itemsToProcess=bulkItems.map((item,i)=>{
-const input=document.getElementById("bulkAmount-"+i);
-const amount=Number(input ? input.value : item.amount || 0);
-return {
-part:item.part,
-amount:amount
-};
-}).filter(item=>item.amount>0);
-
-if(itemsToProcess.length===0){
-alert("Enter a quantity for at least one part.");
-return;
-}
-
-for(const item of itemsToProcess){
-const currentPart=allParts.find(p=>
-(p.id&&item.part.id&&p.id===item.part.id) ||
-(p.manufacturer_part_number&&item.part.manufacturer_part_number&&p.manufacturer_part_number===item.part.manufacturer_part_number)
-) || item.part;
-
-const oldQty=qty(currentPart);
-const newQty=Math.max(0, oldQty-item.amount);
-
-let url=currentPart.id
-? TABLE_API+"?id=eq."+currentPart.id
-: TABLE_API+"?Manufacturer%20Part%20Number=eq."+encodeURIComponent(currentPart.manufacturer_part_number);
-
-const updateResponse=await fetch(url,{
-method:"PATCH",
-headers:{
-"Content-Type":"application/json",
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY,
-Prefer:"return=representation"
-},
-body:JSON.stringify({"Quantity":Number(newQty)})
-});
-
-if(!updateResponse.ok){
-alert(await updateResponse.text());
-return;
-}
-
-const index=allParts.findIndex(p=>
-(p.id&&currentPart.id&&p.id===currentPart.id) ||
-(p.manufacturer_part_number&&currentPart.manufacturer_part_number&&p.manufacturer_part_number===currentPart.manufacturer_part_number)
-);
-
-if(index!==-1){
-allParts[index].quantity=Number(newQty);
-}
-
-await logMovement(currentPart,"JOB OUT",item.amount,job,notes);
-}
-
-alert("Bulk job issue saved");
-
-bulkItems=[];
-document.getElementById("bulkSearch").value="";
-document.getElementById("bulkJob").value="";
-document.getElementById("bulkNotes").value="";
-renderBulkTable();
-showStockWarnings();
-showParts(allParts);
-
-showPage("historyPage");
-}
-async function loadMovements(){
-const r=await fetch(MOVEMENT_API+"?select=*&order=created_at.desc",{
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-}
-});
-
-movements=await r.json();
-
-populateHistoryFilters();
-showHistory();
-}
-
-function getPartForMovement(m){
-return allParts.find(p=>
-(p.id&&m.part_id&&p.id===m.part_id) ||
-(p.manufacturer_part_number&&m.manufacturer_part_number&&p.manufacturer_part_number===m.manufacturer_part_number)
-)||{};
-}
-
-function populateHistoryFilters(){
-const suppliers=[...new Set(allParts.map(p=>p.supplier_name).filter(Boolean))].sort();
-const types=[...new Set(allParts.map(p=>p.part_type).filter(Boolean))].sort();
-const jobs=[...new Set(movements.map(m=>m.job_number).filter(Boolean))].sort();
-
-document.getElementById("historySupplierFilter").innerHTML=
-`<option value="">All Suppliers / Manufacturers</option>`+
-suppliers.map(v=>`<option value="${v}">${v}</option>`).join("");
-
-document.getElementById("historyPartTypeFilter").innerHTML=
-`<option value="">All Part Types</option>`+
-types.map(v=>`<option value="${v}">${v}</option>`).join("");
-
-document.getElementById("historyJobFilter").innerHTML=
-`<option value="">All Job Numbers</option>`+
-jobs.map(v=>`<option value="${v}">${v}</option>`).join("");
-}
-
-function filteredHistoryResults(){
-const search=(document.getElementById("historySearch")?.value||"").toLowerCase();
-const typeFilter=document.getElementById("historyTypeFilter")?.value||"";
-const supplierFilter=document.getElementById("historySupplierFilter")?.value||"";
-const partTypeFilter=document.getElementById("historyPartTypeFilter")?.value||"";
-const jobFilter=document.getElementById("historyJobFilter")?.value||"";
-
-return movements.filter(m=>{
-const p=getPartForMovement(m);
-
-const combined={
-...m,
-supplier_name:p.supplier_name||"",
-part_type:p.part_type||"",
-description:p.description||"",
-rack:p.rack||"",
-shelf:p.shelf||"",
-drawer:p.drawer||"",
-area:p.area||""
-};
-
-if(search&&!JSON.stringify(combined).toLowerCase().includes(search))return false;
-if(typeFilter&&m.movement_type!==typeFilter)return false;
-if(supplierFilter&&p.supplier_name!==supplierFilter)return false;
-if(partTypeFilter&&p.part_type!==partTypeFilter)return false;
-if(jobFilter&&m.job_number!==jobFilter)return false;
-
-return true;
-});
-}
-
-function showHistory(){
-const list=filteredHistoryResults();
-
-document.getElementById("historyResults").innerHTML=list.map(m=>{
-const p=getPartForMovement(m);
-
-return `
-<div class="card">
-<h2>${m.part_name||""}</h2>
-<p><b>Manufacturer Part Number:</b> ${m.manufacturer_part_number||""}</p>
-<p><b>Supplier / Manufacturer:</b> ${p.supplier_name||""}</p>
-<p><b>Part Type:</b> ${p.part_type||""}</p>
-${p.description?`<p><b>Description:</b> ${p.description}</p>`:""}
-${p.area?`<p><b>Area:</b> ${p.area}</p>`:""}
-<p><b>Movement:</b> ${m.movement_type||""}</p>
-<p><b>Quantity:</b> ${m.quantity||""}</p>
-<p><b>Job:</b> ${m.job_number||""}</p>
-<p><b>Notes:</b> ${m.notes||""}</p>
-<p class="location">
-${p.rack?"Rack "+p.rack:""}
-${p.shelf?" | Shelf "+p.shelf:""}
-${p.drawer?" | Drawer "+p.drawer:""}
-</p>
-<p class="small">${m.created_at||""}</p>
-</div>`;
-}).join("");
-}
-
-function clearHistoryFilters(){
-document.getElementById("historySearch").value="";
-document.getElementById("historyTypeFilter").value="";
-document.getElementById("historySupplierFilter").value="";
-document.getElementById("historyPartTypeFilter").value="";
-document.getElementById("historyJobFilter").value="";
-
-showHistory();
-}
-
-function exportHistoryToExcel(){
-const filtered=filteredHistoryResults();
-
-let csv="Date,Part Name,Manufacturer Part Number,Supplier,Part Type,Description,Movement,Quantity,Job Number,Movement Notes,Rack,Shelf,Drawer,Area\n";
-
-filtered.forEach(m=>{
-const p=getPartForMovement(m);
-
-csv += [
-m.created_at||"",
-m.part_name||"",
-m.manufacturer_part_number||"",
-p.supplier_name||"",
-p.part_type||"",
-p.description||"",
-m.movement_type||"",
-m.quantity||"",
-m.job_number||"",
-m.notes||"",
-p.rack||"",
-p.shelf||"",
-p.drawer||"",
-p.area||""
-].map(value=>`"${String(value).replace(/"/g,'""')}"`).join(",")+"\n";
-});
-
-const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-const link=document.createElement("a");
-
-link.href=URL.createObjectURL(blob);
-link.download="stock_movement_history.csv";
-link.click();
-}
-
-function clearHighlights(){
-document.querySelectorAll(".highlight").forEach(e=>e.classList.remove("highlight"));
-}
-
-function extractNumber(v){
-const m=String(v||"").match(/\d+/);
-return m?m[0]:"";
-}
-
-function showMap(rack,shelf,drawer){
-showPage("mapPage");
-clearHighlights();
-
-const rackNum=extractNumber(rack);
-const shelfNum=extractNumber(shelf);
-const drawerRaw=String(drawer||"").trim();
-const drawerText=drawerRaw.toLowerCase();
-const drawerNum=extractNumber(drawerText);
-
-document.getElementById("selectedInfo").innerHTML=
-`<div class="card">
-<b>Selected Location</b><br>
-${rackNum?"Rack "+rackNum+" ":""}
-${shelfNum?"Shelf "+shelfNum+" ":""}
-${drawerRaw?"Drawer "+drawerRaw:""}
-</div>`;
-
-document.getElementById("rack-"+rackNum)?.classList.add("highlight");
-document.getElementById("shelf-"+shelfNum)?.classList.add("highlight");
-
-if(drawerText.startsWith("l")&&drawerNum){
-document.getElementById("left-drawer-main")?.classList.add("highlight");
-document.getElementById("left-drawer-"+drawerNum)?.classList.add("highlight");
-}
-
-if(drawerText.startsWith("r")&&drawerNum){
-document.getElementById("right-drawer-main")?.classList.add("highlight");
-document.getElementById("right-drawer-"+drawerNum)?.classList.add("highlight");
-}
-}
-
-fetch(API,{
-headers:{
-apikey:API_KEY,
-Authorization:"Bearer "+API_KEY
-}
-});
-
-loadParts();
-
-</script>
+<dialog id="confirmDialog" class="app-dialog">
+<form method="dialog">
+<h2 id="confirmTitle">Confirm action</h2>
+<p id="confirmMessage"></p>
+<div class="dialog-actions"><button value="cancel">Cancel</button><button id="confirmAcceptButton" value="confirm">Confirm</button></div>
+</form>
+</dialog>
+
+<dialog id="scannerDialog" class="app-dialog scanner-dialog">
+<div>
+<h2>Scan barcode or QR code</h2>
+<p id="scannerStatus">Point the camera at a manufacturer part number.</p>
+<video id="scannerVideo" autoplay playsinline muted></video>
+<label for="scannerFallback">Enter code manually</label>
+<input id="scannerFallback" placeholder="Manufacturer part number">
+<div class="dialog-actions"><button onclick="closeScanner()">Cancel</button><button onclick="useScannerFallback()">Search code</button></div>
+</div>
+</dialog>
+
+<dialog id="textInputDialog" class="app-dialog">
+<form method="dialog">
+<h2 id="textInputTitle">Enter details</h2>
+<p id="textInputMessage"></p>
+<label for="textInputValue">Reason</label>
+<textarea id="textInputValue" maxlength="1000"></textarea>
+<div class="dialog-actions"><button value="cancel">Cancel</button><button value="confirm">Continue</button></div>
+</form>
+</dialog>
+
+<script src="script.js"></script>
 
 </body>
 </html>

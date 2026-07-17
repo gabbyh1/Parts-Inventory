@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Parts Inventory browser smoke tests</title></head>
+<body>
+<div id="loginScreen"><input id="operatorName"><input id="passwordInput"><button id="loginButton">Unlock</button><p id="loginError"></p></div>
+<button id="menuButton"></button><nav id="sideMenu"></nav><div id="appStatus"></div>
+<div id="dashboardStats"></div><div id="dashboardLowStock"></div><div id="dashboardMovements"></div>
+<div id="searchPage" class="page active"><input id="search"><div id="results"></div></div>
+<div id="inventoryResultSummary"></div><div id="inventoryPagination"></div><button id="cardViewButton"></button><button id="tableViewButton"></button>
+<select id="inventorySupplierFilter"><option value=""></option></select><select id="inventoryTypeFilter"><option value=""></option></select><select id="inventoryStockFilter"><option value=""></option></select><select id="inventorySort"><option value="name-asc"></option></select>
+<div id="stockPage" class="page"><div id="stockResults"></div></div>
+<div id="reorderPage" class="page"><div id="reorderResults"></div></div><div id="duplicatesPage" class="page"><div id="duplicateResults"></div></div>
+<div id="bulkPage" class="page"><input id="bulkSearch"><input id="bulkJob"><textarea id="bulkNotes"></textarea><div id="bulkSearchResults"></div><div id="bulkJobTable"></div><button id="bulkSubmitButton"></button></div>
+<div id="movementPage" class="page"><div id="selectedMovePart"></div><input id="moveSearch"><div id="moveSearchResults"></div><input id="moveQty"><input id="moveJob"><textarea id="moveNotes"></textarea><button id="movementSubmitButton"></button></div>
+<div id="mapPage" class="page"><div id="selectedInfo"></div></div>
+
+<script>
+window.__requests=[];
+window.alert=message=>window.__alerts=(window.__alerts||[]).concat(message);
+const fixturePart={id:7,version:1,manually_low:false,part_name:"<img src=x onerror=alert(1)>",supplier_name:"');window.__xss=true;//",manufacturer_part_number:"R-1",part_type:"Relay",description:"Description",rack:"13",shelf:1,drawer:"L1",area:"Bench",quantity:3};
+const makeResponse=(data,status=200)=>Promise.resolve({ok:status>=200&&status<300,status,text:()=>Promise.resolve(JSON.stringify(data))});
+window.fetch=(url,options={})=>{
+  window.__requests.push({url,options});
+  if(url.includes("authenticate_inventory_staff"))return makeResponse([{session_token:"test-token",expires_at:"2099-01-01T00:00:00Z"}]);
+  if(url.includes("validate_inventory_staff_session"))return makeResponse(true);
+  if(url.includes("inventory_adjust_stock"))return makeResponse([{new_quantity:4}]);
+  if(url.includes("inventory_bulk_issue"))return makeResponse(true);
+  if(url.includes("/Parts?")&&options.method==="PATCH")return makeResponse([{id:7}]);
+  if(url.includes("parts_public"))return makeResponse([fixturePart]);
+  if(url.includes("stock_warning_rules"))return makeResponse([{id:1,part_type:"Relay",warning_level:2}]);
+  if(url.includes("stock_movements"))return makeResponse([]);
+  return makeResponse([]);
+};
+</script>
+<script src="../script.js"></script>
+<script>
+window.addEventListener("load",async()=>{
+  const checks=[];
+  checks.push(window.__requests.length===0);
+  document.getElementById("operatorName").value="Smoke Tester";
+  document.getElementById("passwordInput").value="test-password";
+  await checkPassword();
+  checks.push(inventorySessionToken==="test-token");
+  const authentication=window.__requests.find(request=>request.url.includes("authenticate_inventory_staff"));
+  checks.push(JSON.parse(authentication.options.body).p_operator_name==="Smoke Tester");
+  checks.push(document.getElementById("loginScreen").style.display==="none");
+  const inventoryRequest=window.__requests.find(request=>request.url.includes("parts_public"));
+  checks.push(inventoryRequest.options.headers["x-inventory-session"]==="test-token");
+  checks.push(document.getElementById("results").innerHTML.includes("&lt;img"));
+  checks.push(!document.getElementById("results").querySelector("img"));
+  checks.push(!encodeInlineValue("');window.__xss=true;//").includes("'"));
+  checks.push(!encodePart(fixturePart).includes("'"));
+  checks.push(window.__xss!==true);
+  checks.push(await changeQuantity(fixturePart,4,"MANUAL IN","","test"));
+  checks.push(allParts[0].quantity===4);
+  const adjustment=window.__requests.find(request=>request.url.includes("inventory_adjust_stock"));
+  const adjustmentBody=JSON.parse(adjustment.options.body);
+  checks.push(adjustmentBody.p_part_id===7&&adjustmentBody.p_delta===1);
+  await setManualLow(allParts[0],true);
+  const manualLowRequest=window.__requests.find(request=>request.url.includes("/Parts?")&&request.options.method==="PATCH");
+  checks.push(JSON.parse(manualLowRequest.options.body).manually_low===true);
+  checks.push(manualLowRequest.url.includes("version=eq.1"));
+  checks.push(parseCsv('Part Name,Quantity\n"Quoted, part",2\n').length===2);
+  checks.push(csvCell("=2+2").startsWith("\"'="));
+  checks.push(validatePartValues({name:"",supplier:"",mpn:"",type:"",description:"",rack:"",shelf:null,drawer:"",area:"",quantity:0})==="Enter a part name.");
+  let stableIdRequired=false;
+  try{getPartMutationUrl({manufacturer_part_number:"R-1"});}catch{stableIdRequired=true;}
+  checks.push(stableIdRequired);
+  document.body.dataset.smoke=checks.every(Boolean)?"passed":"failed";
+});
+</script>
+</body>
+</html>
