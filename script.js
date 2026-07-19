@@ -426,7 +426,7 @@ searchParts(false);
 
 function renderPartCard(part){
 const encoded=encodePart(part);
-const encodedLocation=encodeInlineValue(JSON.stringify({rack:part.rack||"",shelf:part.shelf||"",drawer:part.drawer||""}));
+const encodedLocation=encodeInlineValue(JSON.stringify({rack:part.rack||"",shelf:part.shelf||"",drawer:part.drawer||"",area:part.area||""}));
 const warning=getWarningLevel(part.part_type);
 const status=stockStatus(part);
 
@@ -1333,41 +1333,77 @@ const m=String(v||"").match(/\d+/);
 return m?m[0]:"";
 }
 
-function showMap(rack,shelf,drawer){
+function mapNumber(value,min,max){
+const number=Number(extractNumber(value));
+return Number.isInteger(number)&&number>=min&&number<=max?String(number):"";
+}
+
+function highlightMapElement(id){
+const element=document.getElementById(id);
+if(!element)return 0;
+element.classList.add("highlight");
+return 1;
+}
+
+function drawerMapLocation(value){
+const raw=String(value||"").trim();
+const compact=raw.toLowerCase().replace(/[^a-z0-9]/g,"");
+const number=mapNumber(raw,1,7);
+if(!number)return {side:"",number:""};
+if(compact.startsWith("l")||compact.startsWith("drawerleft")||compact.startsWith("drawerl"))return {side:"left",number};
+if(compact.startsWith("r")||compact.startsWith("drawerright")||compact.startsWith("drawerr"))return {side:"right",number};
+return {side:"",number:""};
+}
+
+function showMap(rack,shelf,drawer,area){
 showPage("mapPage");
 clearHighlights();
 
-const rackNum=extractNumber(rack);
-const shelfNum=extractNumber(shelf);
+const rackRaw=String(rack||"").trim();
+const shelfRaw=String(shelf||"").trim();
 const drawerRaw=String(drawer||"").trim();
-const drawerText=drawerRaw.toLowerCase();
-const drawerNum=extractNumber(drawerText);
+const areaRaw=String(area||"").trim();
+const rackNum=mapNumber(rackRaw,13,19);
+const shelfNum=mapNumber(shelfRaw,1,6);
+const drawerLocation=drawerMapLocation(drawerRaw);
+const namedLocation=(rackRaw+" "+areaRaw).toLowerCase();
+let highlighted=0;
+
+if(rackNum)highlighted+=highlightMapElement("rack-"+rackNum);
+if(shelfNum)highlighted+=highlightMapElement("shelf-"+shelfNum);
+
+if(drawerLocation.side&&drawerLocation.number){
+highlighted+=highlightMapElement(drawerLocation.side+"-drawer-main");
+highlighted+=highlightMapElement(drawerLocation.side+"-drawer-"+drawerLocation.number);
+}
+
+if(namedLocation.includes("cupboard")){
+highlighted+=highlightMapElement("cupboard-"+(mapNumber(namedLocation,1,1)||"1"));
+}
+
+if(namedLocation.includes("bench")){
+highlighted+=highlightMapElement("bench-main");
+highlighted+=highlightMapElement("bench-extension");
+}
+
+const locationDetails=[
+rackRaw?`<b>Rack:</b> ${escapeHtml(rackRaw)}`:"",
+shelfRaw?`<b>Shelf:</b> ${escapeHtml(shelfRaw)}`:"",
+drawerRaw?`<b>Drawer:</b> ${escapeHtml(drawerRaw)}`:"",
+areaRaw?`<b>Area:</b> ${escapeHtml(areaRaw)}`:""
+].filter(Boolean);
 
 document.getElementById("selectedInfo").innerHTML=
-`<div class="card">
-<b>Selected Location</b><br>
-${rackNum?"Rack "+rackNum+" ":""}
-${shelfNum?"Shelf "+shelfNum+" ":""}
-${drawerRaw?"Drawer "+escapeHtml(drawerRaw):""}
+`<div class="card map-selection">
+<b>Selected Location</b>
+${locationDetails.length?`<p>${locationDetails.join("<br>")}</p>`:`<p>No location is recorded for this part.</p>`}
+${locationDetails.length&&!highlighted?`<p class="map-warning">This recorded location does not have a matching shape on the map.</p>`:""}
 </div>`;
-
-document.getElementById("rack-"+rackNum)?.classList.add("highlight");
-document.getElementById("shelf-"+shelfNum)?.classList.add("highlight");
-
-if(drawerText.startsWith("l")&&drawerNum){
-document.getElementById("left-drawer-main")?.classList.add("highlight");
-document.getElementById("left-drawer-"+drawerNum)?.classList.add("highlight");
-}
-
-if(drawerText.startsWith("r")&&drawerNum){
-document.getElementById("right-drawer-main")?.classList.add("highlight");
-document.getElementById("right-drawer-"+drawerNum)?.classList.add("highlight");
-}
 }
 
 function showMapFromEncoded(encoded){
 const location=JSON.parse(decodeURIComponent(encoded));
-showMap(location.rack,location.shelf,location.drawer);
+showMap(location.rack,location.shelf,location.drawer,location.area);
 }
 
 async function loadDashboardMovements(){

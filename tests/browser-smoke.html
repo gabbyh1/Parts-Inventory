@@ -12,7 +12,7 @@
 <div id="reorderPage" class="page"><div id="reorderResults"></div></div><div id="duplicatesPage" class="page"><div id="duplicateResults"></div></div>
 <div id="bulkPage" class="page"><input id="bulkSearch"><input id="bulkJob"><textarea id="bulkNotes"></textarea><div id="bulkSearchResults"></div><div id="bulkJobTable"></div><button id="bulkSubmitButton"></button></div>
 <div id="movementPage" class="page"><div id="selectedMovePart"></div><input id="moveSearch"><div id="moveSearchResults"></div><input id="moveQty"><input id="moveJob"><textarea id="moveNotes"></textarea><button id="movementSubmitButton"></button></div>
-<div id="mapPage" class="page"><div id="selectedInfo"></div></div>
+<div id="mapPage" class="page"><div id="selectedInfo"></div><div id="rack-13"></div><div id="shelf-1"></div><div id="left-drawer-main"></div><div id="left-drawer-1"></div><div id="right-drawer-main"></div><div id="right-drawer-5"></div><div id="cupboard-1"></div><div id="bench-main"></div><div id="bench-extension"></div></div>
 
 <script>
 window.__requests=[];
@@ -48,6 +48,14 @@ window.addEventListener("load",async()=>{
   checks.push(inventoryRequest.options.headers["x-inventory-session"]==="test-token");
   checks.push(document.getElementById("results").innerHTML.includes("&lt;img"));
   checks.push(!document.getElementById("results").querySelector("img"));
+  const mapButton=[...document.querySelectorAll("#results button")].find(button=>button.textContent==="View Location on Map");
+  mapButton.click();
+  checks.push(["rack-13","shelf-1","left-drawer-main","left-drawer-1","bench-main","bench-extension"].every(id=>document.getElementById(id).classList.contains("highlight")));
+  checks.push(document.getElementById("selectedInfo").textContent.includes("Area: Bench"));
+  showMap("Cupboard 1","","","");
+  checks.push(document.getElementById("cupboard-1").classList.contains("highlight")&&!document.getElementById("rack-13").classList.contains("highlight"));
+  showMap("","","Drawer R5","");
+  checks.push(document.getElementById("right-drawer-main").classList.contains("highlight")&&document.getElementById("right-drawer-5").classList.contains("highlight"));
   checks.push(!encodeInlineValue("');window.__xss=true;//").includes("'"));
   checks.push(!encodePart(fixturePart).includes("'"));
   checks.push(window.__xss!==true);
