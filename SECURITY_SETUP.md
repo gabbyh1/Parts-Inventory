@@ -50,8 +50,9 @@ Run both migration files through the Supabase CLI or SQL editor, in this order:
 
 1. `supabase/migrations/20260717_secure_inventory_workflows.sql`
 2. `supabase/migrations/20260717_inventory_feature_extensions.sql`
+3. `supabase/migrations/20260717171000_password_only_inventory_login.sql`
 
-Use a new SQL Editor query for each file and select **No limit** before running it. The second migration depends on the first.
+Use a new SQL Editor query for each file and select **No limit** before running it. Run them in the order shown.
 
 The migration:
 
@@ -64,9 +65,9 @@ The migration:
 - applies stock changes and movement history in one transaction;
 - makes bulk job issues all-or-nothing.
 
-The feature-extension migration adds manual low-stock selection, reorder quantities, supplier/datasheet/image references, version checks during edits, operator attribution, movement reversal, and safe duplicate-part merging.
+The feature-extension migration adds manual low-stock selection, reorder quantities, supplier/datasheet/image references, version checks during edits, movement history, movement reversal, and safe duplicate-part merging.
 
-## 4. Set the staff password
+## 4. Set the shared inventory password
 
 In the Supabase SQL editor, choose a unique password of at least 6 characters and run:
 
@@ -96,7 +97,7 @@ alter table public."Parts" validate constraint parts_purchase_price_nonnegative;
 
 Deploy `index.html`, `style.css`, and `script.js` together. Then verify:
 
-1. A staff name and incorrect password are rejected.
+1. The shared password works without a username, and an incorrect password is rejected.
 2. Ten failed attempts trigger the temporary lockout.
 3. Reloading the same tab restores a valid session.
 4. Logging out invalidates the server session.

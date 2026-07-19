@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="UTF-8"><title>Parts Inventory browser smoke tests</title></head>
 <body>
-<div id="loginScreen"><input id="operatorName"><input id="passwordInput"><button id="loginButton">Unlock</button><p id="loginError"></p></div>
+<div id="loginScreen"><input id="passwordInput"><button id="loginButton">Unlock</button><p id="loginError"></p></div>
 <button id="menuButton"></button><nav id="sideMenu"></nav><div id="appStatus"></div>
 <div id="dashboardStats"></div><div id="dashboardLowStock"></div><div id="dashboardMovements"></div>
 <div id="searchPage" class="page active"><input id="search"><div id="results"></div></div>
@@ -37,12 +37,12 @@ window.fetch=(url,options={})=>{
 window.addEventListener("load",async()=>{
   const checks=[];
   checks.push(window.__requests.length===0);
-  document.getElementById("operatorName").value="Smoke Tester";
   document.getElementById("passwordInput").value="test-password";
   await checkPassword();
   checks.push(inventorySessionToken==="test-token");
   const authentication=window.__requests.find(request=>request.url.includes("authenticate_inventory_staff"));
-  checks.push(JSON.parse(authentication.options.body).p_operator_name==="Smoke Tester");
+  const authenticationBody=JSON.parse(authentication.options.body);
+  checks.push(authenticationBody.p_password==="test-password"&&!Object.hasOwn(authenticationBody,"p_operator_name"));
   checks.push(document.getElementById("loginScreen").style.display==="none");
   const inventoryRequest=window.__requests.find(request=>request.url.includes("parts_public"));
   checks.push(inventoryRequest.options.headers["x-inventory-session"]==="test-token");

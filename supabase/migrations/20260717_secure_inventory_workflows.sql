@@ -122,10 +122,9 @@ begin
 end;
 $$;
 
-create or replace function public.authenticate_inventory_staff(
-  p_password text,
-  p_operator_name text default 'Staff'
-)
+drop function if exists public.authenticate_inventory_staff(text, text);
+
+create or replace function public.authenticate_inventory_staff(p_password text)
 returns table (session_token text, expires_at timestamptz)
 language plpgsql
 security definer
@@ -138,21 +137,20 @@ declare
   v_token text;
   v_expires_at timestamptz := now() + interval '8 hours';
 begin
-  delete from private.inventory_login_attempts
-  where attempted_at < now() - interval '1 day';
+  delete from private.inventory_login_attempts attempt
+  where attempt.attempted_at < now() - interval '1 day';
 
   select count(*) into v_failures
-  from private.inventory_login_attempts
-  where client_key = v_client_key
-    and success = false
-    and attempted_at > now() - interval '15 minutes';
+  from private.inventory_login_attempts attempt
+  where attempt.client_key = v_client_key
+    and attempt.success = false
+    and attempt.attempted_at > now() - interval '15 minutes';
 
   if v_failures >= 10 then
     raise exception 'Too many failed attempts. Please wait 15 minutes and try again.' using errcode = 'P0001';
   end if;
 
-  if p_password is null or char_length(p_password) = 0 or char_length(p_password) > 200
-    or char_length(btrim(coalesce(p_operator_name, ''))) not between 1 and 100 then
+  if p_password is null or char_length(p_password) = 0 or char_length(p_password) > 200 then
     insert into private.inventory_login_attempts (client_key, success) values (v_client_key, false);
     return;
   end if;
@@ -171,14 +169,14 @@ begin
     return;
   end if;
 
-  delete from private.inventory_login_attempts
-  where client_key = v_client_key and success = false;
+  delete from private.inventory_login_attempts attempt
+  where attempt.client_key = v_client_key and attempt.success = false;
 
   insert into private.inventory_login_attempts (client_key, success) values (v_client_key, true);
 
-  delete from private.inventory_staff_sessions
-  where expires_at < now() - interval '1 day'
-     or revoked_at < now() - interval '1 day';
+  delete from private.inventory_staff_sessions session
+  where session.expires_at < now() - interval '1 day'
+     or session.revoked_at < now() - interval '1 day';
 
   v_token := pg_catalog.encode(extensions.gen_random_bytes(32), 'hex');
 
@@ -186,7 +184,7 @@ begin
   values (
     pg_catalog.encode(extensions.digest(v_token, 'sha256'), 'hex'),
     v_expires_at,
-    btrim(p_operator_name)
+    'Staff'
   );
 
   return query select v_token, v_expires_at;
@@ -527,14 +525,14 @@ grant usage on schema private to anon;
 grant execute on function private.has_valid_inventory_session() to anon;
 
 revoke all on function public.set_inventory_staff_password(text) from public, anon, authenticated;
-revoke all on function public.authenticate_inventory_staff(text, text) from public, anon, authenticated;
+revoke all on function public.authenticate_inventory_staff(text) from public, anon, authenticated;
 revoke all on function public.validate_inventory_staff_session() from public, anon, authenticated;
 revoke all on function public.end_inventory_staff_session() from public, anon, authenticated;
 revoke all on function public.inventory_adjust_stock(bigint, bigint, text, text, text) from public, anon, authenticated;
 revoke all on function public.inventory_bulk_issue(text, text, jsonb) from public, anon, authenticated;
 
 grant execute on function public.set_inventory_staff_password(text) to service_role;
-grant execute on function public.authenticate_inventory_staff(text, text) to anon;
+grant execute on function public.authenticate_inventory_staff(text) to anon;
 grant execute on function public.validate_inventory_staff_session() to anon;
 grant execute on function public.end_inventory_staff_session() to anon;
 grant execute on function public.inventory_adjust_stock(bigint, bigint, text, text, text) to anon;

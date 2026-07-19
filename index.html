@@ -14,9 +14,7 @@
 <div class="login-box">
 <h1>Electrical Parts</h1>
 <p>Enter password to continue</p>
-<label for="operatorName">Your name</label>
-<input id="operatorName" autocomplete="username" maxlength="100" placeholder="Name shown in movement history">
-<label class="sr-only" for="passwordInput">Staff password</label>
+<label class="sr-only" for="passwordInput">Password</label>
 <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter'){checkPassword()}">
 <button id="loginButton" onclick="checkPassword()">Unlock</button>
 <p id="loginError" class="login-error" role="alert" aria-live="assertive"></p>

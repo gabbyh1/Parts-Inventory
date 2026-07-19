@@ -147,15 +147,14 @@ inventoryLoaded=true;
 
 async function checkPassword(){
 const password=document.getElementById("passwordInput").value;
-const operatorName=fieldValue("operatorName");
-if(!operatorName||!password){
-setText("loginError","Enter your name and the staff password.");
+if(!password){
+setText("loginError","Enter the password.");
 return;
 }
 
 setButtonBusy("loginButton",true,"Checking...","Unlock");
 try{
-const result=await callRpc("authenticate_inventory_staff",{p_password:password,p_operator_name:operatorName},false);
+const result=await callRpc("authenticate_inventory_staff",{p_password:password},false);
 const session=Array.isArray(result)?result[0]:result;
 if(!session?.session_token){
 setText("loginError","Incorrect password.");

@@ -11,7 +11,7 @@ declare
 begin
   perform public.set_inventory_staff_password('test-password-123');
   select session_token into v_token
-  from public.authenticate_inventory_staff('test-password-123', 'Database test');
+  from public.authenticate_inventory_staff('test-password-123');
 
   perform set_config(
     'request.headers',
